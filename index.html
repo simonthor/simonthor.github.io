@@ -1,11 +1,79 @@
 <!DOCTYPE html>
 <html lang="se">
-  <head>
-    <title>Simon Thors hemsida</title>
-  </head>
-  <body>
-    <h1>Information</h1>
-    <p>Jag heter Simon.</p>
+<head>
+    <!-- titel på programmet. Visas på tabben -->
+    <title>Simon Thor</title>
+    <!-- encoding -->
+    <meta charset="UTF-8"/>
+    <!-- stylesheet-->
+    <link rel="stylesheet" type="text/css" href="default.css"/>
+    <!-- favicon -->
+    <link rel="icon" href="favicon.png">
+</head>
+
+<!-- text -->
+<body>
+    <div class="menu">
+        <p>Simon Thors Githubhemsida</p>
+        <a class="menu" href="index.html"><img class="icon" src="favicon.png" alt="Home"></a> | <a class="menu" href="https://github.com/simonthor">Github</a> | <a class="menu" href="rickroll.html">Passwords</a>
+    </div>
+    <div style="margin:30px">
+    <!-- titel -->
+    <h1>Mjukvarukunskaper</h1>
+        <h2>Programmeringsspråk</h2>
+            Mina programmeringskunskaper, ordnat i kunnighetsordning.
+            <!-- TODO: Detta är inte snygg HTML kod. Det måste finnas ett bättre sätt. -->
+            <ol class="software">
+                <li class="software">Python</li>
+                <li class="software">Java</li>
+                <li class="software">C++</li>
+                <li class="software">Javascript</li>
+            </ol>
+        <h2>Markup Languages</h2>
+            Markup languages, ordnat i kunnighetsordning.
+            <ol class="software">
+                <li class="software"><img class="ratio" src="latex.png" alt="LaTeX" width="10"/></li>
+                <li class="software">HTML</li>
+                <li class="software">CSS</li>
+            </ol>
+        <h2>Operativsystem</h2>
+            Operativsystem jag kan hantera, ordnat i kunnighetsordning. Olika distros av Linux listas upp separat.
+            <ol class="software">
+                <li class="software">Windows</li>
+                <li class="software">Android</li>
+                <li class="software">Manjaro Linux</li>
+                <li class="software">Ubuntu</li>
+                <li class="software">MacOSX</li>
+                <li class="software">iOS</li>
+            </ol>
+        <h2>Övriga mjukvarukunskaper</h2>
+            Dessa mjukvarukunskaper klassa inte under någon annan kategori. Ingen speciell ordning.
+            <ul class="software">
+                <li class="software">PyCharm</li>
+                <li class="software">Atom</li>
+                <li class="software">Vim</li>
+                <li class="software">Cura Ultimaker 3D</li>
+                <li class="software">Fusion 360</li>
+            </ul>
+    <h1>Kodexempel</h1>
+    <!-- kod -->
+    <div class="codeblock">
+    <code class="python">
+        import matplotlib.pyplot as plt <br/>
+        import numpy as np <br/>
+        plt.scatter(np.random.uniform(0, 1, size=100), np.random.uniform(0, 1, size=100), c=np.arange(100), cmap='jet') <br/>
+    </code>
+    </div>
+    <!-- formatering
+    <p title="random text">
+        <i>Here </i><u>is some </u><b>formatted </b><s>text. </s><sup>Man kan skriva högt </sup><sub>eller lågt, </sub>
+        <small>litet eller </small><span style="font-size: 20px">stort.</span>
+    </p>
+    -->
+    </div>
+    <!-- script -->
     <script type="text/javascript" src="learnjs.js"></script>
-  </body>
+</body>
 </html>
+
+
