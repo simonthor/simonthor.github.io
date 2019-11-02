@@ -1,0 +1,14 @@
+# This document does mod_rewrite
+
+RewriteEngine on
+
+# If the folder exists in the server, it will not change anything
+RewriteCond %{REQUEST_FILENAME} !-d
+
+# check for file in directory ending with .html
+RewriteCond %{REQUEST_FILENAME}\.html -f
+
+# Show the page that ends with .html
+# NC will ignore capital letters and make everything lowercase
+# L will make the above conditions only apply to the one line below
+RewriteRule ^(.*)$ $1.html [NC,L]

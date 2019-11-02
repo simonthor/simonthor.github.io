@@ -7,13 +7,38 @@ body, html {
     box-sizing: border-box;
 }
 
+* {
+    box-sizing: inherit;
+}
+
 .menu {
     background-color: #203864;
-    font-size: 30px;
     color: white;
     text-align: center;
-    padding: 30px;
+    padding: 10px 20px;
     text-decoration: none;
+}
+
+#topBar {
+    position: fixed;
+    font-size: 30px;
+    top: 0;
+    width: 100%;
+    margin-top: 0;
+}
+
+#bottomBar {
+    bottom: 0;
+}
+
+.menu a {
+    padding: inherit;
+    color: inherit;
+    text-decoration: inherit;
+}
+
+.main {
+    padding-top: 70px;
 }
 
 code.python {
@@ -21,6 +46,7 @@ code.python {
 }
 
 .ratio {
+    /*Doesn't work yet*/
     display: block;
     max-width:200px;
     max-height:20px;
@@ -45,10 +71,11 @@ div.codeblock {
     width: 50px;
     height: 50px;
     border: 0;
+    margin-top: inherit;
     border-radius: 50%;
     vertical-align: middle;
     box-shadow: 0 0 0 rgba(204,169,44, 0.4);
-    animation: pulse 2s infinite;
+    animation: pulse 1.5s infinite;
     animation-play-state: paused;
 }
 
