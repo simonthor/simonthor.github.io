@@ -2,22 +2,27 @@
 <html lang="se">
 <head>
     <meta charset="UTF-8">
-    <title>Javascript Objects</title>
-    <script type="text/javascript" src="js/learnobjects.js"></script>
+    <title>Play Tetris</title>
+    <script type="text/javascript" src="js/tetris.js"></script>
     <link rel="stylesheet" type="text/css" href="default.css"/>
 </head>
 <body>
     <div  id="topBar" class="menu">
-        <a href="index.html"><img class="icon" src="favicon.png" alt="Home"></a> |
+        <a href="https://simonthor.github.io"><img class="icon" src="favicon.ico" alt="Home"></a> |
         <a href="https://github.com/simonthor">Github</a> |
         <a href="jstest">JS testing</a> |
-        <a href="passwords">Passwords</a>
+        <a href="passwords">Passwords</a> |
+        <a href="tetris">Tetris</a>
     </div>
-
     <div class="main">
-    <script type="text/javascript">document.write(main());</script>
+        <!--
+        <input type="button" onclick="start_game()" value="Press this button">
+        -->
+        <canvas id="tetris-game" width="500" height="600"></canvas>
+        <script type="text/javascript">main()</script>
+        <noscript>Please enable Javascript in your browser to play Tetris.</noscript>
     </div>
-
+    <!--
     <div class="menu" id="bottomBar">
         <p>
             Hemsida gjord med HTML, CSS, och Javascript <br>
@@ -25,5 +30,6 @@
             Adress: Kungliga slottet <br> <span style="padding-left: 3em"></span> 107 70 Stockholm
         </p>
     </div>
+    -->
 </body>
 </html>

@@ -38,7 +38,7 @@ body, html {
 }
 
 .main {
-    padding-top: 70px;
+    padding-top: 150px;
 }
 
 code.python {
@@ -59,6 +59,20 @@ code.python {
     font-family: "Courier New", monospace;
     font-weight: 500;
     margin: 10px;
+}
+
+#tetris-game {
+    background-color: #eeeeee;
+    padding-left: 0;
+    padding-right: 0;
+    margin-bottom: 20px;
+    margin-left: auto;
+    margin-right: auto;
+    display: block;
+
+    /*width: 500px;*/
+    /*height: 800px;*/
+
 }
 
 div.codeblock {
