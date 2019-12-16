@@ -75,9 +75,8 @@ function print_page() {
 }
 
 function main (...args) {
-    document.cookie = "name=Test;";
-    document.cookie = "expires=;";
-    document.cookie = "val=" + args[0] + ";";
-    document.write(document.cookie)
+    fetch('tetris_states.txt')
+    .then(response => response.text())
+    .then(text => console.log(text));
 }
 
