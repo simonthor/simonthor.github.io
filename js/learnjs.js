@@ -74,9 +74,18 @@ function print_page() {
     window.print();
 }
 
-function main (...args) {
-    fetch('tetris_states.txt')
-    .then(response => response.text())
-    .then(text => console.log(text));
+function main () {
+    let coll = document.getElementsByClassName("collapsible");
+    for (let i = 0; i < coll.length; i++) {
+        button = coll[i];
+        button.addEventListener("click", function() {
+            this.classList.toggle("active");
+            let content = this.nextElementSibling;
+            if (content.style.display === "block") {
+                content.style.display = "none";
+            } else {
+                content.style.display = "block";
+            }
+        });
+    }
 }
-

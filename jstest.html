@@ -6,7 +6,7 @@
     <link rel="stylesheet" type="text/css" href="default.css"/>
     <script type="text/javascript" src="js/learnjs.js"></script>
 </head>
-<body>
+<body onload="main();">
     <div  id="topBar" class="menu">
         <a href="/"><img class="icon" src="favicon.png" alt="Home"></a> |
         <a href="https://github.com/simonthor">Github</a> |
@@ -15,7 +15,11 @@
     </div>
     <!-- script -->
     <div class="main">
-        <input type="button" onclick="main()" value="Press this button">
+        <button type="button" class="collapsible">Open Collapsible</button>
+        <div class="collapse-content">
+            <p>Lorem ipsum...</p>
+        </div>
+
         <noscript>Please enable Javascript in your browser for a better experience.</noscript>
     </div>
 
