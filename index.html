@@ -9,11 +9,14 @@
     <link rel="stylesheet" type="text/css" href="default.css"/>
     <!-- favicon -->
     <link rel="icon" href="favicon.png">
+    <!-- Javascript -->
+    <script type="text/javascript" src="js/front-page.js"></script>
+    <script type="text/javascript" src="imageIDs.json"></script>
 </head>
 
 <!-- text -->
-<body>
-    <div  id="topBar" class="menu">
+<body class="menu">
+    <div id="FrontPage">
         <p>Simon Thors hemsida</p>
         <p><a href="https://github.com/simonthor">Github</a></p>
         <p><a href="/tips">Tips and links</a></p>
@@ -21,5 +24,7 @@
         <p><a href="/fsn/chart-example">Exam result statistics</a></p>
         <p><a href="/tetris/play">Tetris</a></p>
     </div>
+    <p id="ImageCredit" style="position: absolute; bottom: 0;">Image credit: </p>
 </body>
+<script>setBackground()</script>
 </html>

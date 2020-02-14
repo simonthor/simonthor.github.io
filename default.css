@@ -11,6 +11,13 @@ body, html {
     box-sizing: inherit;
 }
 
+#FrontPage {
+    margin: 0;
+    padding: 0;
+
+    font-size: 200%;
+}
+
 .menu {
     background-color: #203864;
     color: white;
