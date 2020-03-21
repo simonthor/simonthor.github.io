@@ -1,0 +1,54 @@
+:root {
+    background-color: #000f29;
+    color: white;
+    --radius: 500px
+}
+
+.planet {
+    position: fixed;
+    border-radius: 50%;
+    display: inline-block;
+    text-align: center;
+    color: white;
+    top: 50%;
+    left: 50%;
+}
+
+a {
+    text-decoration: none;
+    color: inherit;
+}
+
+.planet:hover {
+    /*
+    -webkit-animation-play-state:paused;
+    -moz-animation-play-state:paused;
+    -o-animation-play-state:paused;
+    animation-play-state:paused;
+     */
+    cursor: pointer;
+}
+
+
+/*
+ * Credit: https://www.useragentman.com/blog/2013/03/03/animating-circular-paths-using-css3-transitions/
+ */
+@-webkit-keyframes Orbit {
+    from { -webkit-transform: rotate(0deg) translateX(var(--radius)) rotate(0deg); }
+    to   { -webkit-transform: rotate(360deg) translateX(var(--radius)) rotate(-360deg); }
+}
+
+@-moz-keyframes Orbit {
+    from { -moz-transform: rotate(0deg) translateX(var(--radius)) rotate(0deg); }
+    to   { -moz-transform: rotate(360deg) translateX(var(--radius)) rotate(-360deg); }
+}
+
+@-o-keyframes Orbit {
+    from { -o-transform: rotate(0deg) translateX(var(--radius)) rotate(0deg); }
+    to   { -o-transform: rotate(360deg) translateX(var(--radius)) rotate(-360deg); }
+}
+
+@keyframes Orbit {
+    from { transform: rotate(0deg) translateX(var(--radius)) rotate(0deg); }
+    to   { transform: rotate(360deg) translateX(var(--radius)) rotate(-360deg); }
+}
