@@ -1,23 +1,30 @@
 [
     {
         "text": "Math",
-        "href": "/",
-        "radius": 100,
-        "size": 50,
+        "href": "/math",
+        "radius": 30,
+        "size": 3,
         "color": "#f00"
     },
     {
         "text": "Physics",
         "href": "/physics",
-        "radius": 200,
-        "size": 100,
+        "radius": 50,
+        "size": 7,
         "color": "#0f0"
     },
     {
         "text": "About",
         "href": "/about",
         "radius": 0,
-        "size": 100,
+        "size": 10,
         "color": "#ffb300"
+    },
+    {
+        "text": "Programming",
+        "href": "/programming",
+        "radius": 80,
+        "size": 8,
+        "color": "#5511ad"
     }
 ]

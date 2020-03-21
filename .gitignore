@@ -29,3 +29,6 @@ yarn-error.log*
 
 # Jetbrains
 .idea/
+
+# Other
+/.unused

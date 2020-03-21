@@ -1,7 +1,13 @@
 :root {
     background-color: #000f29;
     color: white;
-    --radius: 500px
+    --radius: 500px;
+    font-family: Tahoma, Geneva, sans-serif;
+}
+
+h1 {
+    text-align: center;
+    font-size: 3rem;
 }
 
 .planet {
@@ -12,6 +18,8 @@
     color: white;
     top: 50%;
     left: 50%;
+    font-weight: bold;
+    font-size: 1rem;
 }
 
 a {
@@ -26,6 +34,7 @@ a {
     -o-animation-play-state:paused;
     animation-play-state:paused;
      */
+    color: #000f29;
     cursor: pointer;
 }
 

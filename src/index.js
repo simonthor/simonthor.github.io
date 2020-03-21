@@ -14,16 +14,9 @@ export default function App() {
   return (
     <Router>
       <div>
-        <nav>
-              <Link to="/">Home</Link> | <Link to="/solar-system">Solar System</Link>
-        </nav>
-
         <Switch>
-          <Route path="/solar-system">
-              <SolarSystem />
-          </Route>
           <Route path="/">
-            <Home />
+              <SolarSystem />
           </Route>
         </Switch>
       </div>
@@ -31,9 +24,6 @@ export default function App() {
   );
 }
 
-function Home() {
-  return <h2>Home</h2>;
-}
 
 
 ReactDOM.render(
