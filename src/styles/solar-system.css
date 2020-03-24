@@ -1,15 +1,3 @@
-:root {
-    background-color: #000f29;
-    color: white;
-    --radius: 500px;
-    font-family: Tahoma, Geneva, sans-serif;
-}
-
-h1 {
-    text-align: center;
-    font-size: 3rem;
-}
-
 .planet {
     position: fixed;
     border-radius: 50%;
@@ -22,11 +10,6 @@ h1 {
     font-size: 1rem;
 }
 
-a {
-    text-decoration: none;
-    color: inherit;
-}
-
 .planet:hover {
     /*
     -webkit-animation-play-state:paused;
@@ -34,9 +17,11 @@ a {
     -o-animation-play-state:paused;
     animation-play-state:paused;
      */
+
     color: #000f29;
     cursor: pointer;
 }
+
 
 
 /*

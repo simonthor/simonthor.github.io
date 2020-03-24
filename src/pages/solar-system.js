@@ -5,7 +5,7 @@ import '../styles/solar-system.css';
 //import { CSSTransitionGroup } from 'react-transition-group';
 const ROTATION_CONSTANT = 0.1;
 
-export function SolarSystem (props) {
+export default function SolarSystem (props) {
     return (
         <>
             <h1>Simon Thor</h1>
@@ -16,7 +16,7 @@ export function SolarSystem (props) {
     );
 }
 
-function Planet (props) {
+export function Planet (props) {
     // Kepler's law: https://sv.wikipedia.org/wiki/Keplers_lagar
     const orbitPeriod = Math.floor(Math.sqrt(Math.pow(props.radius, 3) * ROTATION_CONSTANT));
     const orbitConfiguration = 'Orbit ' + orbitPeriod + 's linear infinite';

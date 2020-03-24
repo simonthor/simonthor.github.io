@@ -1,12 +1,5 @@
 [
     {
-        "text": "Math",
-        "href": "/math",
-        "radius": 30,
-        "size": 3,
-        "color": "#f00"
-    },
-    {
         "text": "Physics",
         "href": "/physics",
         "radius": 50,
