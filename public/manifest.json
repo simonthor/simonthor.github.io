@@ -1,6 +1,6 @@
 {
-  "short_name": "Testing React",
-  "name": "Testing out the features of React",
+  "short_name": "Simon Thor",
+  "name": "Simon Thor's website (made with React)",
   "icons": [
     {
       "src": "favicon.ico",
