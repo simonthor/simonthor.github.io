@@ -16,6 +16,7 @@ export default function SolarSystem (props) {
     );
 }
 
+// TODO: rewrite planet component so that it does not always have a radius
 export function Planet (props) {
     // Kepler's law: https://sv.wikipedia.org/wiki/Keplers_lagar
     const orbitPeriod = Math.floor(Math.sqrt(Math.pow(props.radius, 3) * ROTATION_CONSTANT));
