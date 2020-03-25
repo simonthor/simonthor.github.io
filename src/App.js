@@ -9,10 +9,11 @@ import {
 import SolarSystem from './pages/solar-system';
 import Programming from './pages/programming';
 import Tips from './pages/tips';
-import Physics from './pages/physics';
-//import GameMenu from './pages/games';
+import Research from './pages/research';
 import Header from './header';
 import About from './pages/about';
+import Error from './pages/error'
+//import GameMenu from './pages/games';
 
 
 export default function App() {
@@ -30,11 +31,14 @@ export default function App() {
                 <Route path='/programming'>
                     <Programming/>
                 </Route>
-                <Route path='/physics'>
-                    <Physics/>
+                <Route path='/research'>
+                    <Research/>
                 </Route>
-                <Route path='/'>
+                <Route exact path='/'>
                     <SolarSystem/>
+                </Route>
+                <Route>
+                    <Error/>
                 </Route>
             </Switch>
         </Router>
