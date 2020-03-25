@@ -1,6 +1,6 @@
 import React from 'react';
 
-export default function Physics() {
+export default function Research() {
     return (
         <h1>Placeholder</h1>
     );
