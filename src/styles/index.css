@@ -1,7 +1,6 @@
 :root {
     background-color: #000f29;
     color: white;
-    --radius: 500px;
     font-family: Tahoma, Geneva, sans-serif;
 }
 
@@ -10,8 +9,12 @@ h1 {
     font-size: 3rem;
 }
 
-
 a {
+    display: block;
     text-decoration: none;
     color: inherit;
+}
+
+a .normal {
+    text-decoration: inherit;
 }
