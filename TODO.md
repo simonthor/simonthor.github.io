@@ -4,9 +4,11 @@
 - [ ] Change tags to "subjects", "type" etc.
 - [ ] Write [header.js](/src/header.js)
 - [ ] Write [programming.js](/src/pages/programming.js)
-- [ ] Write [physics.js](/src/pages/physics.js)
+- [ ] Write [research.js](/src/pages/research.js)
 - [ ] Write [about.js](/src/pages/about.js)
 - [ ] Make planets show picture on hover
+- [x] Make radius an optional parameter for planets
+- [x] Add ```styled-components```
 
 ## Optional
 - [ ] Stop planet motion on hover
