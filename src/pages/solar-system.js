@@ -15,7 +15,6 @@ export default function SolarSystem (props) {
     );
 }
 
-// TODO: rewrite planet component so that it does not always have a radius
 export class Planet extends React.Component {
     constructor(props) {
         super(props);
@@ -47,8 +46,6 @@ export class Planet extends React.Component {
                     transform: rotate(360deg) translateX(${radius}px) rotate(-360deg);
                 }
             `;
-            //const orbitConfiguration = 'Orbit ' + orbitPeriod + 's linear infinite';
-            // TODO: move top and left props to solar system class?
             PlanetDiv = styled(PlanetDiv)`
                 position: fixed;
                 margin-top: ${(-props.size / 2)}rem; margin-left: ${(-props.size / 2)}rem;

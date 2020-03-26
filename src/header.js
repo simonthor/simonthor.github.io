@@ -71,7 +71,6 @@ export default class Header extends React.Component {
     render() {
         const planets = this.state.planets;
         // TODO: add margin directly to planets using styled-components
-        // TODO: add tooltip
         return (
             <nav>
                 {planets.map((planet) => (
