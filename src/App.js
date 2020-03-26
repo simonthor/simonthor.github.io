@@ -12,7 +12,9 @@ import Tips from './pages/tips';
 import Research from './pages/research';
 import Header from './header';
 import About from './pages/about';
-import Error from './pages/error'
+import Error from './pages/error';
+import Test from './pages/test';
+import News from './pages/news';
 //import GameMenu from './pages/games';
 
 
@@ -33,6 +35,12 @@ export default function App() {
                 </Route>
                 <Route path='/research'>
                     <Research/>
+                </Route>
+                <Route path='/test'>
+                    <Test/>
+                </Route>
+                <Route path='/news'>
+                    <News/>
                 </Route>
                 <Route exact path='/'>
                     <SolarSystem/>
