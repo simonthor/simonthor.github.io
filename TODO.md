@@ -11,7 +11,7 @@
 - [x] Add ```styled-components```
 
 ## Optional
-- [ ] Stop planet motion on hover
-- [ ] Enter more tips in the [tips.json](/src/data/tips.json) file.
+- [X] Stop planet motion on hover
+- [ ] Add more tips to [tips.json](/src/data/tips.json) file.
 - [ ] Write [game.js](/src/pages/game.js)
 - [ ] Make Tetris

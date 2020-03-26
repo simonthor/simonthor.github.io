@@ -58,13 +58,28 @@ export class Planet extends React.Component {
                 animation: ${orbit} ${orbitPeriod}s linear infinite;
             `;
         }
-        this.state = {div: PlanetDiv, ...props};
+        /*
+        let PlanetLink = (a) => (
+            <Link to={props.href} className={a.className}/>
+        );
+        */
+        let PlanetLink = styled(Link)`
+            display: block;
+            text-decoration: none;
+            color: inherit;
+        `;
+
+        this.state = {div: PlanetDiv, link:PlanetLink, ...props};
     }
+
     render () {
         const PlanetDiv = this.state.div;
+        const PlanetLink = this.state.link;
         return (
-            <PlanetDiv className="Planet">
-                <Link to={this.state.href}>{this.state.text}</Link>
+            <PlanetDiv>
+                <PlanetLink to={this.state.href}>
+                    {this.state.text}
+                </PlanetLink>
             </PlanetDiv>
         );
     }

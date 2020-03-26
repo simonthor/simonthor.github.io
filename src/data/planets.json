@@ -1,23 +1,42 @@
 [
     {
-        "text": "Physics",
-        "href": "/physics",
-        "radius": 50,
-        "size": 7,
-        "color": "#0f0"
-    },
-    {
         "text": "About",
+        "short": "📋",
         "href": "/about",
         "radius": 0,
-        "size": 10,
-        "color": "#ffb300"
+        "size": 7,
+        "color": "#ffeb53"
     },
     {
         "text": "Programming",
+        "short": "💻",
         "href": "/programming",
-        "radius": 80,
-        "size": 8,
+        "radius": 30,
+        "size": 7,
         "color": "#5511ad"
+    },
+    {
+        "text": "Research",
+        "short": "🔬",
+        "href": "/research",
+        "radius": 55,
+        "size": 5,
+        "color": "red"
+    },
+    {
+        "text": "Tips",
+        "short": "💡",
+        "href": "/tips",
+        "radius": 75,
+        "size": 4,
+        "color": "blue"
+    },
+    {
+        "text": "News",
+        "short": "📰",
+        "href": "/news",
+        "radius": 90,
+        "size": 3,
+        "color": "#0f0"
     }
 ]
