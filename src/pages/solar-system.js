@@ -1,9 +1,7 @@
 import planets from '../data/planets.json';
 import React from 'react';
 import {Link} from 'react-router-dom';
-//import '../styles/solar-system.css';
 import styled, {keyframes} from 'styled-components';
-//import { CSSTransitionGroup } from 'react-transition-group';
 const ROTATION_CONSTANT = 0.1;
 
 export default function SolarSystem (props) {
@@ -85,23 +83,3 @@ export class Planet extends React.Component {
     }
 
 }
-        /*// Add the ID of the planet to CSS stylesheet to change its distance from center
-        document.styleSheets[1].insertRule(
-            '#' + props.text + ' { --radius:' + Math.floor(props.radius/100*Math.min(window.innerWidth, window.innerHeight)/2) + 'px; }',
-            document.styleSheets[1].cssRules.length);*/
-
-
-    // CSS configurations of the planet
-    /*const planetStyle = {
-        height: planetSize, width: planetSize, lineHeight: planetSize,
-        marginTop: (-props.size/2).toString() + 'rem',
-        marginLeft:(-props.size/2).toString() + 'rem',
-        backgroundColor: props.color,
-        Animation: orbitConfiguration, MozAnimation: orbitConfiguration, OAnimation: orbitConfiguration, WebkitAnimation: orbitConfiguration
-    };
-
-    const planet = (
-            <div className="planet" id={props.text} style={planetStyle}>
-                <Link to={props.href}>{props.text}</Link>
-            </div>
-    );*/
