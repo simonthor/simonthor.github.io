@@ -3,6 +3,6 @@ import tips from '../data/tips.json';
 
 export default function Tips() {
     return (
-        <h1>Placeholder</h1>
+        <h1>Coming soon...</h1>
     );
 }
