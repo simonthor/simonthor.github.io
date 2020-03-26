@@ -20,7 +20,7 @@ export class Planet extends React.Component {
     constructor(props) {
         super(props);
         // TODO: better name
-        let PlanetDiv = styled.div.attrs({ className: 'Planet'})`
+        let PlanetDiv = styled.div`
             border-radius: 50%;
             display: inline-block;
             text-align: center;
