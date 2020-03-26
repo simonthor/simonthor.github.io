@@ -1,5 +1,5 @@
 :root {
-    background-color: #000f29;
+    background-color: #000115;
     color: white;
     font-family: Tahoma, Geneva, sans-serif;
 }
@@ -10,9 +10,10 @@ h1 {
 }
 
 a {
-    display: block;
+    display: inline;
     text-decoration: none;
-    color: inherit;
+    color: white;
+    font-weight: bold;
 }
 
 a .normal {
