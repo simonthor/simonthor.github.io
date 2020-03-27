@@ -1,7 +1,17 @@
-:root {
+html, body {
+    margin: 0;
+    height: 100%;
+    width: 100%;
+}
+
+#root {
+    height: 100%;
+    width: 100%;
+    margin: 0;
     background-color: #000115;
     color: white;
     font-family: Tahoma, Geneva, sans-serif;
+    overflow: hidden;
 }
 
 h1 {
