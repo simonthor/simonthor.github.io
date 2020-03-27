@@ -5,7 +5,7 @@
         "href": "/about",
         "radius": 0,
         "size": 7,
-        "color": "#ffeb53"
+        "image": "sun.svg"
     },
     {
         "text": "Programming",
@@ -13,7 +13,7 @@
         "href": "/programming",
         "radius": 30,
         "size": 7,
-        "color": "#5511ad"
+        "image": "earth.svg"
     },
     {
         "text": "Research",
@@ -21,7 +21,7 @@
         "href": "/research",
         "radius": 55,
         "size": 5,
-        "color": "red"
+        "image": "mars.svg"
     },
     {
         "text": "Tips",
@@ -29,7 +29,7 @@
         "href": "/tips",
         "radius": 75,
         "size": 4,
-        "color": "blue"
+        "image": "jupiter.jpg"
     },
     {
         "text": "News",
@@ -37,6 +37,6 @@
         "href": "/news",
         "radius": 90,
         "size": 3,
-        "color": "#0f0"
+        "image": "saturn.svg"
     }
 ]
