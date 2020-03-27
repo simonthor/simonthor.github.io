@@ -1,6 +1,6 @@
 import React from 'react';
 import ReactDOM from 'react-dom';
-import '../index.css';
+import '../../styles/tictactoe.css';
 
 // TODO: make winner result appear on same rerender
 function Square(props) {

@@ -7,18 +7,9 @@ import Page from '../page';
 import jupiter from '../images/jupiter.svg';
 
 
-function requireAll(directory, fileExtension) {
-    const r = require.context(directory, false, new RegExp('.' + fileExtension));
-    let files = {};
-    r.keys().forEach((key) => {
-        files[key.substring(key.indexOf('/')+1, key.length-fileExtension.length-1)] = r(key)
-    });
-    return files;
-}
-
 export default function Test (props) {
 
     return (
-        <Page/>
+        <p>nothing here</p>
     );
 }
