@@ -10,17 +10,17 @@ export default function About() {
                 I also conduct research at the same university about <a className="normal" href="/research/kth">space physics</a>.
             </p>
             <h2>Research Experience</h2>
-            <li>
-                <ol><a href="/research/kth#FTE">Flux transfer events</a></ol>
-                <ol><a href="/research/kth#TPA">Transpolar arcs</a> </ol>
-                <ol><a href="/research/mit#jet">Quark and gluon jets</a> </ol>
-            </li>
+            <ul>
+                <li><a href="/research/kth#FTE">Flux transfer events</a></li>
+                <li><a href="/research/kth#TPA">Transpolar arcs</a> </li>
+                <li><a href="/research/mit#jet">Quark and gluon jets</a> </li>
+            </ul>
             <h2>Programming Languages</h2>
-            <li>
-                <ol><a href="/programming#python">Python</a></ol>
-                <ol><a href="/programming#matlab">MATLAB</a> </ol>
-                <ol><a href="/programming#javascript">Javascript</a></ol>
-            </li>
+            <ul>
+                <li><a href="/programming#python">Python</a></li>
+                <li><a href="/programming#matlab">MATLAB</a> </li>
+                <li><a href="/programming#javascript">Javascript</a></li>
+            </ul>
         </>
     );
 }

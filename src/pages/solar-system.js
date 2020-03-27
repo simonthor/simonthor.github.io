@@ -4,13 +4,16 @@ import {Link} from 'react-router-dom';
 import styled, {keyframes} from 'styled-components';
 import ReactTooltip from 'react-tooltip';
 
-const ROTATION_CONSTANT = 0.01;
-
+const ROTATION_CONSTANT = 0.05;
 
 export default function SolarSystem () {
+    // TODO: more styling to top text?
     return (
         <>
-            <h1>Simon Thor</h1>
+            <div style={{textAlign: 'center'}}>
+                <h1>Simon Thor</h1>
+                <p>Click on one of the planets to find out more</p>
+            </div>
             {planets.map((planet) =>
                 <Planet key={planet.text} {...planet}/>
             )}
@@ -18,11 +21,16 @@ export default function SolarSystem () {
     );
 }
 
+// TODO: Move Planet component to its own file?
 export class Planet extends React.Component {
     constructor(props) {
         super(props);
+
+        // Width of planet.
+        // Currently only applied to Saturn since it does not have the same width as height.
         const width = props['width-rel'] ? props['width-rel'] * props.height : props.height;
 
+        // This is the rendered component which displays a planet.
         let Container = styled(Link)`
             display: inline-block;
             text-align: center;
@@ -31,14 +39,10 @@ export class Planet extends React.Component {
             height: ${props.height}rem; width: ${width}rem; line-height: ${props.height}rem;
             background-image: url("${require('../images/'+ props.image + '.svg')}");
             background-size: cover;
-            
-            &:hover {
-                animation-play-state: paused;
-                font-weight: bold;
-            }
         `;
 
         if (props.hasOwnProperty('radius')) {
+            // Having an orbit radius implies that the planet should be moving
             const radius = Math.floor(props.radius / 100 * Math.min(window.innerWidth, window.innerHeight) / 2);
             // Kepler's law: https://sv.wikipedia.org/wiki/Keplers_lagar
             const orbitPeriod = Math.floor(Math.sqrt(Math.pow(props.radius, 3) * ROTATION_CONSTANT));
@@ -50,11 +54,18 @@ export class Planet extends React.Component {
                     transform: rotate(360deg) translateX(${radius}px) rotate(-360deg);
                 }
             `;
+
             Container = styled(Container)`
                 position: fixed;
                 margin-top: ${-props.height / 2}rem; margin-left: ${-width / 2}rem;
                 top: 50%; left: 50%;
                 animation: ${orbit} ${orbitPeriod}s linear infinite;
+                
+                &:hover {
+                    animation-play-state: paused;
+                }
+            }
+
             `;
         }
 
@@ -73,5 +84,4 @@ export class Planet extends React.Component {
             </>
         );
     }
-
 }
