@@ -1,7 +1,6 @@
 [
     {
         "text": "About",
-        "short": "📋",
         "href": "/about",
         "radius": 0,
         "height": 7,
@@ -9,7 +8,6 @@
     },
     {
         "text": "Programming",
-        "short": "💻",
         "href": "/programming",
         "radius": 30,
         "height": 4,
@@ -17,7 +15,6 @@
     },
     {
         "text": "Research",
-        "short": "🔬",
         "href": "/research",
         "radius": 45,
         "height": 3,
@@ -25,7 +22,6 @@
     },
     {
         "text": "Tips",
-        "short": "💡",
         "href": "/tips",
         "radius": 65,
         "height": 6,
@@ -33,7 +29,6 @@
     },
     {
         "text": "News",
-        "short": "📰",
         "href": "/news",
         "radius": 90,
         "height": 4.5,

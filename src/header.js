@@ -1,14 +1,12 @@
 import React from 'react';
 import {Planet} from "./pages/solar-system";
 import jsonplanets from './data/planets.json';
-import styled from 'styled-components';
 
 export default class Header extends React.Component {
     constructor(props) {
         super(props);
         const home = {
             text: "Home",
-            short: "🏠",
             href: "/",
             radius: 0,
             size: 3,
