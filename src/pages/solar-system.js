@@ -2,11 +2,10 @@ import planets from '../data/planets.json';
 import React from 'react';
 import {Link} from 'react-router-dom';
 import styled, {keyframes} from 'styled-components';
-import jupiter from '../images/jupiter.svg';
 
 const ROTATION_CONSTANT = 0.1;
 
-// TODO: import images dynamically
+// TODO: import images dynamically and pass them as image parameter to props
 // TODO: make tooltip a built-in feature for planets
 
 export default function SolarSystem (props) {
@@ -31,7 +30,7 @@ export class Planet extends React.Component {
             color: white;
             font-size: 1rem;
             height: ${props.size}rem; width: ${props.size}rem; line-height: ${props.size}rem;
-            background-image: url("${jupiter}");
+            background-image: url("${props.image}");
             background-size: cover;
             &:hover {
                 animation-play-state: paused;
