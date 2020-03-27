@@ -15,27 +15,27 @@ import Test from './pages/test';
 
 
 export default function App() {
+    // Paths with same format (Page format) but different contents:
+    const pagePaths = [
+        {path: '/about', image: 'sun'},
+        {path: '/tips', image: 'jupiter'},
+        {path: '/programming', image: 'earth'},
+        {path: '/research', image: 'mars'},
+        {path: '/news', image: 'saturn'},
+    ];
     // Only render header if not front page
     return (
         <Router>
             <Route path='/' render={ ( props ) => ( props.location.pathname !== '/') && <Header/> }/>
             <Switch>
-                {/*TODO: make this code shorter*/}
-                <Route path='/about'>
-                  <Page src='about' image='sun'/>
-                </Route>
-                <Route path='/tips'>
-                    <Page src='tips' image='jupiter'/>
-                </Route>
-                <Route path='/programming'>
-                    <Page src='programming' image='earth'/>
-                </Route>
-                <Route path='/research'>
-                    <Page src='research' image='mars'/>
-                </Route>
-                <Route path='/news'>
-                    <Page src='news' image='saturn'/>
-                </Route>
+                {pagePaths.map((pathInfo) => (
+                        <Route path={pathInfo.path}>
+                            <Page key={pathInfo.path}
+                                  src={pathInfo.path.substring(1)}
+                                  image={pathInfo.image}/>
+                        </Route>
+                    )
+                )}
                 <Route path='/test'>
                     <Test />
                 </Route>

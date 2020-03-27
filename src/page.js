@@ -4,14 +4,16 @@ import styled from 'styled-components';
 export default class Page extends React.Component {
     constructor(props) {
         super(props);
+        console.log('./pages/' + props.src);
+        const Content = React.lazy(()=>(import('./pages/' + this.state.props.src)));
 
-        let Sky = styled.div`
+        const Sky = styled.div`
             background-image: linear-gradient(#000115, #1f1844, lightblue);
             width: 100%;
             height: 100%;
         `;
 
-        let Planet = styled.div`
+        const Planet = styled.div`
             background-image: url(${require('./images/' + props.image + '.svg')});
             position: absolute;
             bottom: 0;
@@ -21,18 +23,16 @@ export default class Page extends React.Component {
             background-repeat: no-repeat;
         `;
 
-        this.state = {background: Sky, planet: Planet, props};
+        this.state = {content: Content, background: Sky, planet: Planet, props};
     }
 
     render() {
-        // TODO: render not working
-        console.log('./pages/' + this.state.props.src);
-        const Content = React.lazy(()=>(import('./pages/' + this.state.props.src)));
+        const Content = this.state.content;
         // TODO: make new planet images
         return (
             <this.state.background>
-                <React.Suspense fallback={<div>Loading...</div>}>
-                    <Content/>
+                <React.Suspense fallback={'loading...'}>
+                    <this.state.content/>
                 </React.Suspense>
                 {/*<this.state.planet/>*/}
             </this.state.background>
