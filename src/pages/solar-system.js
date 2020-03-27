@@ -2,13 +2,12 @@ import planets from '../data/planets.json';
 import React from 'react';
 import {Link} from 'react-router-dom';
 import styled, {keyframes} from 'styled-components';
+import ReactTooltip from 'react-tooltip';
 
-const ROTATION_CONSTANT = 0.1;
+const ROTATION_CONSTANT = 0.01;
 
-// TODO: import images dynamically and pass them as image parameter to props
-// TODO: make tooltip a built-in feature for planets
 
-export default function SolarSystem (props) {
+export default function SolarSystem () {
     return (
         <>
             <h1>Simon Thor</h1>
@@ -22,20 +21,20 @@ export default function SolarSystem (props) {
 export class Planet extends React.Component {
     constructor(props) {
         super(props);
-        // TODO: better name
-        let PlanetDiv = styled.div`
-            /*border-radius: 50%;*/
-            display: block;
+        const width = props['width-rel'] ? props['width-rel'] * props.height : props.height;
+
+        let Container = styled(Link)`
+            display: inline-block;
             text-align: center;
             color: white;
             font-size: 1rem;
-            height: ${props.size}rem; width: ${props.size}rem; line-height: ${props.size}rem;
-            background-image: url("${props.image}");
+            height: ${props.height}rem; width: ${width}rem; line-height: ${props.height}rem;
+            background-image: url("${require('../images/'+ props.image + '.svg')}");
             background-size: cover;
+            
             &:hover {
                 animation-play-state: paused;
                 font-weight: bold;
-                color: black;
             }
         `;
 
@@ -51,33 +50,27 @@ export class Planet extends React.Component {
                     transform: rotate(360deg) translateX(${radius}px) rotate(-360deg);
                 }
             `;
-            PlanetDiv = styled(PlanetDiv)`
+            Container = styled(Container)`
                 position: fixed;
-                margin-top: ${(-props.size / 2)}rem; margin-left: ${(-props.size / 2)}rem;
+                margin-top: ${-props.height / 2}rem; margin-left: ${-width / 2}rem;
                 top: 50%; left: 50%;
                 animation: ${orbit} ${orbitPeriod}s linear infinite;
             `;
         }
 
-        let PlanetLink = styled(Link)`
-            display: block;
-            text-decoration: none;
-            color: inherit;
-        `;
-
-        this.state = {div: PlanetDiv, link:PlanetLink, ...props};
+        this.state = {content: Container, ...props};
     }
 
-
     render () {
-        const PlanetDiv = this.state.div;
-        const PlanetLink = this.state.link;
+        const Container = this.state.content;
         return (
-            <PlanetDiv image={this.image}>
-                <PlanetLink to={this.state.href}>
-                    {this.state.short}
-                </PlanetLink>
-            </PlanetDiv>
+            <>
+                <ReactTooltip id={this.state.text+"-p"} place="bottom" type="dark" effect="solid"/>
+                <Container
+                    to={this.state.href} image={this.image}
+                    data-for={this.state.text+"-p"} data-tip={this.state.text}
+                />
+            </>
         );
     }
 

@@ -6,6 +6,7 @@ import {
     Route
 } from 'react-router-dom';
 
+// TODO: decrease number of imports by creating Page component
 import SolarSystem from './pages/solar-system';
 import Programming from './pages/programming';
 import Tips from './pages/tips';

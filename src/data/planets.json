@@ -4,39 +4,40 @@
         "short": "📋",
         "href": "/about",
         "radius": 0,
-        "size": 7,
-        "image": "sun.svg"
+        "height": 7,
+        "image": "sun"
     },
     {
         "text": "Programming",
         "short": "💻",
         "href": "/programming",
         "radius": 30,
-        "size": 7,
-        "image": "earth.svg"
+        "height": 4,
+        "image": "earth"
     },
     {
         "text": "Research",
         "short": "🔬",
         "href": "/research",
-        "radius": 55,
-        "size": 5,
-        "image": "mars.svg"
+        "radius": 45,
+        "height": 3,
+        "image": "mars"
     },
     {
         "text": "Tips",
         "short": "💡",
         "href": "/tips",
-        "radius": 75,
-        "size": 4,
-        "image": "jupiter.jpg"
+        "radius": 65,
+        "height": 6,
+        "image": "jupiter"
     },
     {
         "text": "News",
         "short": "📰",
         "href": "/news",
         "radius": 90,
-        "size": 3,
-        "image": "saturn.svg"
+        "height": 4.5,
+        "width-rel": 2.08,
+        "image": "saturn"
     }
 ]
