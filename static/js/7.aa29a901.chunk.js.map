@@ -1,0 +1,1 @@
+{"version":3,"sources":["pages/research.js"],"names":["Research"],"mappings":"iIAAA,mEAEe,SAASA,IACpB,OACI","file":"static/js/7.aa29a901.chunk.js","sourcesContent":["import React from 'react';\r\n\r\nexport default function Research() {\r\n    return (\r\n        <h1>Coming soon...</h1>\r\n    );\r\n}"],"sourceRoot":""}

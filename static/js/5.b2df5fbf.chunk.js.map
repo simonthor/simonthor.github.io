@@ -1,0 +1,1 @@
+{"version":3,"sources":["pages/news.js"],"names":["News","props"],"mappings":"iIAAA,mEAEe,SAASA,EAAMC,GAC1B,OAAQ","file":"static/js/5.b2df5fbf.chunk.js","sourcesContent":["import React from 'react';\r\n\r\nexport default function News (props) {\r\n    return (<h1>Coming soon...</h1>);\r\n}"],"sourceRoot":""}
