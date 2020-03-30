@@ -1,5 +1,5 @@
 import React from 'react';
-import {Planet} from "./pages/solar-system";
+import Planet from './components/planet';
 import jsonplanets from './data/planets.json';
 
 export default class Header extends React.Component {
