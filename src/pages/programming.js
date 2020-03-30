@@ -49,7 +49,7 @@ export default function Programming() {
             </p>
             <h3>Mainpage</h3>
             <Repo href="https://github.com/simonthor/mainpage"/>
-            <p>
+            <p style={{marginBottom: 0}}>
                 A minimalistic Firefox extension which redirects to the front page of a website.
                 Example: <code>https://github.com/simonthor/mainpage</code> &rarr; <code>https://github.com</code>
             </p>
