@@ -21,7 +21,7 @@ export default class SolarSystem extends React.Component {
         };
     }
 
-    componentWillMount() {
+    componentDidMount() {
         window.addEventListener('resize', this.handleWindowSizeChange);
     }
     componentWillUnmount() {
