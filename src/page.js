@@ -9,7 +9,7 @@ export default class Page extends React.Component {
         const Sky = styled.div`
             background-image: linear-gradient(#000115, #1f1844, lightblue);
             width: 100%;
-            height: 100%;
+            min-height: 100%;
         `;
 
         const Planet = styled.div`
@@ -21,7 +21,6 @@ export default class Page extends React.Component {
             background-size: cover;
             background-repeat: no-repeat;
         `;
-
         this.state = {content: Content, background: Sky, planet: Planet, props};
     }
 
@@ -31,9 +30,9 @@ export default class Page extends React.Component {
             <this.state.background>
                 <React.Suspense fallback={'loading...'}>
                     <this.state.content/>
-                    {/* This p element removes bottom empty bar*/}
-                    <p style={{marginBottom: 0}}/>
                 </React.Suspense>
+                {/*This removes black bar at bottom of page*/}
+                <span style={{height:'1rem', display:'block'}}/>
                 {/*<this.state.planet/>*/}
             </this.state.background>
         );
