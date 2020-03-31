@@ -31,6 +31,8 @@ export default class Page extends React.Component {
             <this.state.background>
                 <React.Suspense fallback={'loading...'}>
                     <this.state.content/>
+                    {/* This p element removes bottom empty bar*/}
+                    <p style={{marginBottom: 0}}/>
                 </React.Suspense>
                 {/*<this.state.planet/>*/}
             </this.state.background>

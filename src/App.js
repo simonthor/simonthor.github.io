@@ -42,7 +42,7 @@ export default class App extends React.Component {
         return (
             <>
                 <Router>
-                    <Route path='/' render={ ( props ) => ( props.location.pathname !== '/') && <Header/> }/>
+                    <Route path='/' render={ ( props ) => ( props.location.pathname !== '/') && <Header key="header"/> }/>
                     <Switch>
                         {this.state.pagePaths.map((pathInfo) => (
                                 <Route path={pathInfo.path}>
@@ -53,7 +53,7 @@ export default class App extends React.Component {
                             )
                         )}
                         <Route path='/test'>
-                            <Test />
+                            <Test/>
                         </Route>
                         <Route exact path='/'>
                             <SolarSystem/>
