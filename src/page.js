@@ -8,7 +8,7 @@ export default class Page extends React.Component {
 
         const Sky = styled.div`
             background-image: linear-gradient(#000115, #1f1844, lightblue);
-            width: 100%;
+            max-width: 100%;
             min-height: 100%;
         `;
 
