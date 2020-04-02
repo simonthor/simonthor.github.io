@@ -5,10 +5,11 @@ import {
     Switch,
     Route
 } from 'react-router-dom';
-import styled from 'styled-components';
+//import styled from 'styled-components';
 
 import SolarSystem from './pages/solar-system';
 import Header from './header';
+import Footer from './footer';
 import Page from './components/page';
 // While test can be rendered using Page, it should not depend on bugs in Page itself.
 // Hence its standalone import
@@ -27,14 +28,8 @@ export default class App extends React.Component {
             {path: '/research', image: 'mars'},
             {path: '/news', image: 'saturn'},
         ];
-        const footer = styled.p`
-            position: fixed;
-            bottom: 0;
-            right: 0;
-            font-size: 0.8rem;
-        `;
 
-        this.state = {pagePaths: pagePaths, footer: footer};
+        this.state = {pagePaths: pagePaths};
     }
 
     render() {
@@ -63,7 +58,7 @@ export default class App extends React.Component {
                         </Route>
                     </Switch>
                 </Router>
-                <this.state.footer>&copy; Simon Thor 2020</this.state.footer>
+                <Footer/>
             </>
         );
     }
