@@ -48,7 +48,7 @@ export default function Programming() {
             </p>
 
             <h2>Javascript</h2>
-            <p><b>Packages:</b> <code>React</code>, <code>React Router</code>, <code>Styled Components</code>, <code>scipy</code></p>
+            <p><b>Packages:</b> <code>React</code>, <code>React Router</code>, <code>React Tooltips</code>, <code>Styled Components</code></p>
             <h3>This website</h3>
             <Repo href="https://github.com/simonthor/simonthor.github.io"/>
             <p>
@@ -60,8 +60,8 @@ export default function Programming() {
             <h3>Mainpage</h3>
             <Repo href="https://github.com/simonthor/mainpage"/>
             <p>
-                A minimalistic Firefox extension which redirects to the front page of a website.
-                Example: <code>https://github.com/simonthor/mainpage</code> &rarr; <code>https://github.com</code>
+                A minimalistic Firefox extension which redirects to the front page of a website. <br/>
+                Example: <code>https://github.com/simonthor/mainpage &rarr; https://github.com</code>
             </p>
 
             <h2>MATLAB</h2>
