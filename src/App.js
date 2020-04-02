@@ -9,7 +9,7 @@ import styled from 'styled-components';
 
 import SolarSystem from './pages/solar-system';
 import Header from './header';
-import Page from './page';
+import Page from './components/page';
 // While test can be rendered using Page, it should not depend on bugs in Page itself.
 // Hence its standalone import
 import Test from './pages/test';
