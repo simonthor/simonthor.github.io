@@ -1,17 +1,15 @@
 html, body {
     margin: 0;
-    height: 100%;
-    width: 100%;
-    background-color: #000115;
 }
 
 body > #root {
-    height: 100%;
-    width: 100%;
+    background-color: #000115;
+    display: flex;
+    flex-direction: column;
+    min-height: 100vh;
     margin: 0;
     color: white;
     font-family: Tahoma, Geneva, sans-serif;
-    /*overflow: hidden;*/
 }
 
 h1 {
@@ -19,12 +17,6 @@ h1 {
     font-size: 3rem;
 }
 
-a {
-    display: inline;
-    text-decoration: none;
-    color: white;
-    font-weight: bold;
-}
 
 a .normal {
     text-decoration: inherit;

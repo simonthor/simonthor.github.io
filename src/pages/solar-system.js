@@ -64,7 +64,7 @@ export default class SolarSystem extends React.Component {
         return (
             <>
                 <div style={{textAlign: 'center'}}>
-                    <h1>Simon Thor</h1>
+                    <h1 style={{marginTop: 0}}>Simon Thor</h1>
                     <p>Click on one of the planets to find out more</p>
                 </div>
                 {PlanetContainer}

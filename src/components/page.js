@@ -8,6 +8,7 @@ export default class Page extends React.Component {
         const Content = React.lazy(()=>(import('../pages/' + this.state.props.src)));
 
         const Sky = styled.div`
+            flex: 1;
             background-image: linear-gradient(#000115, #1f1844, lightblue);
             max-width: 100%;
             min-height: 100%;
@@ -105,8 +106,8 @@ export default class Page extends React.Component {
             }
             
             & pre, code {
-              color: #222;
-              background-color: #fff;
+              color: #fff;
+              background-color: #2b2b2b;
             
               font-family: Monaco, "Bitstream Vera Sans Mono", "Lucida Console", Terminal, monospace;
               font-size: 0.875em;
