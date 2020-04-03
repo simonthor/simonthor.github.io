@@ -65,7 +65,12 @@ export default function Programming() {
             </p>
 
             <h2>MATLAB</h2>
+            <p>Packages: <code>irfu-matlab</code></p>
             <h3>Analysis and Visualization of Cluster Satellite Data</h3>
+            <p>
+                Using the <code>irfu-matlab</code> package to collect data from NASA:s satellite data API.
+                I then cleaned, analyzed, and visualized this data with MATLAB.
+            </p>
         </>
     );
 }

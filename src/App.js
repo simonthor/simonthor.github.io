@@ -11,7 +11,7 @@ import SolarSystem from './pages/solar-system';
 import Header from './header';
 import Footer from './footer';
 import Page from './components/page';
-// While test can be rendered using Page, it should not depend on bugs in Page itself.
+// While Test can be rendered using Page, it should not depend on bugs in Page itself.
 // Hence its standalone import
 import Test from './pages/test';
 //import GameMenu from './pages/games';
