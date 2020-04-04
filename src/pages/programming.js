@@ -71,6 +71,22 @@ export default function Programming() {
                 Using the <code>irfu-matlab</code> package to collect data from NASA:s satellite data API.
                 I then cleaned, analyzed, and visualized this data with MATLAB.
             </p>
+
+            <h2>C++</h2>
+            <p>Packages: <code>Pythia</code></p>
+            <h3>Particle physics simulation of quark and gluon Jets</h3>
+            <p>
+                Using the <code>Pythia</code> module, I simualted collisions in a particle accelerator to generate quark and gluon jets.
+                This data was saved and analyzed using Python.
+            </p>
+            <h2>Java</h2>
+            <p>Packages: <code>Swing</code></p>
+            <h3>Sudoku</h3>
+            <p>
+                As part of a programming course in 2019, I coded a sudoku game.
+                This included an automatic sudoku generator and solver.
+                The sudoku generating and solving algorithms could generate boards of any size, e.g. 4x4, 9x9, or 25x25.
+            </p>
         </>
     );
 }
