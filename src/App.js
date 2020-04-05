@@ -13,7 +13,7 @@ import Footer from './footer';
 import Page from './components/page';
 // While Test can be rendered using Page, it should not depend on bugs in Page itself.
 // Hence its standalone import
-import Test from './pages/test';
+import Test from './test';
 //import GameMenu from './pages/games';
 
 

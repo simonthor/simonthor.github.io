@@ -122,5 +122,73 @@
             "high school": [1, 2, 3]
         },
         "season": "autumn"
+    },
+    {
+        "name": "Breakthrough Junior Challenge",
+        "links":
+        [
+            "https://breakthroughjuniorchallenge.org"
+        ],
+        "info": "I denna tävling skickar man in en video där man förklarar ett naturvetenskapligt fenomen/koncept på ett lättförståeligt sätt. Alla ungdomar från hela världen mellan 13 och 18 år kan delta och om man vinner så får man ett efter-gymnasialt stipendium på $250,000, läraren får $50 000 och $100 000 till Breakthrough Science Lab [vet ej vad detta är], samt en resa till prisceremonin. Detta pris är extremt prestigefullt och mycket svårt att vinna.",
+        "tags": ["competition", "STEM"],
+        "academic level": {
+            "age":[13, 14, 15, 16, 17, 18]
+        },
+        "season": "spring"
+    },
+    {
+        "name": "Unga Astropartikelfysikföreningen",
+        "links":
+        [
+            "https://au.se/astropartikelfysik",
+            "https://www.facebook.com/groups/350454222046546/"
+        ],
+        "info": "En förening med fokus på astropartikelfysik. Anordnar bland annat onlinediskussionsseminarium och en mininobelmiddag.",
+        "tags": ["association", "physics"],
+        "academic level": {
+            "age":[13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25]
+        },
+        "season": "all"
+    },
+    {
+        "name": "Digital Ungdom",
+        "links":
+        [
+            "https://digitalungdom.se"
+        ],
+        "info": "Ett förbund med fokus på programmering och datorer.",
+        "tags": ["association", "computer science"],
+        "academic level": {
+            "high school":[1, 2, 3],
+            "university": [1, 2, 3, 4, 5]
+        },
+        "season": "all"
+    },
+    {
+        "name": "Unga Forskare",
+        "links":
+        [
+            "https://ungaforskare.se"
+        ],
+        "info": "Ett förbund med fokus på all naturvetenskap. Anordnar tävlingar, sommarforskarskolor, m.m.",
+        "tags": ["association", "STEM"],
+        "academic level": {
+            "age": [5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25]
+        },
+        "season": "all"
+    },
+    {
+        "name": "S'Cool LAB Summer Camp",
+        "links":
+        [
+            "https://scoollab.web.cern.ch/"
+        ],
+        "info": "Detta är ett tolv dagar långt sommarläger som anordnas vid CERN i Schweiz. 30 gymnasieelever från hela världen samlas under slutet av juli och början av augusti för att lära sig om partikelfysik genom föreläsningar, studiebesök och andra aktiviteter. Lägret och resan dit är helt gratis, men konkurrensen är mycket hög.",
+        "tags": ["camp", "physics"],
+        "academic level": {
+            "high school": [2, 3]
+        },
+        "season": "summer",
+        "archive": true
     }
 ]
