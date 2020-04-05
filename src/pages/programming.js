@@ -79,6 +79,7 @@ export default function Programming() {
                 Using the <code>Pythia</code> module, I simualted collisions in a particle accelerator to generate quark and gluon jets.
                 This data was saved and analyzed using Python.
             </p>
+            
             <h2>Java</h2>
             <p>Packages: <code>Swing</code></p>
             <h3>Sudoku</h3>
