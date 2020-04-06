@@ -5,12 +5,22 @@ import SolarSystem, {Planet} from './pages/solar-system';
 import ReactTooltip from 'react-tooltip';
 import Collapsible from './components/collapsible';
 
+function RefLink (props) {
+    console.log(props.children);
+    return (
+        <div>
+            <p>{props.children}</p>
+        </div>
+
+    )
+}
+
 export default function Test (props) {
 
     return (
-        <Collapsible title='click me'>
-            <p>hi</p>
-        </Collapsible>
+        <RefLink>
+            hej
+        </RefLink>
     );
 }
 
