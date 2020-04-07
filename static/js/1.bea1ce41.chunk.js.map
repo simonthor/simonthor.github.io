@@ -1,1 +1,0 @@
-{"version":3,"sources":["pages/tips.js"],"names":["Tips"],"mappings":"iIAAA,yEAGe,SAASA,IACpB,OACI,gD","file":"static/js/1.bea1ce41.chunk.js","sourcesContent":["import React from 'react';\r\nimport tips from '../data/tips.json';\r\n\r\nexport default function Tips() {\r\n    return (\r\n        <h1>Coming soon...</h1>\r\n    );\r\n}"],"sourceRoot":""}

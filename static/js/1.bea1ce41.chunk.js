@@ -1,2 +1,0 @@
-(this["webpackJsonpsimonthor.github.io"]=this["webpackJsonpsimonthor.github.io"]||[]).push([[1],{45:function(n,t,o){"use strict";o.r(t),o.d(t,"default",(function(){return r}));var i=o(0),e=o.n(i);o(67);function r(){return e.a.createElement("h1",null,"Coming soon...")}},67:function(n){n.exports=JSON.parse("{}")}}]);
-//# sourceMappingURL=1.bea1ce41.chunk.js.map

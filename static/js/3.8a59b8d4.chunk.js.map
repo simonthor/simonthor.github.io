@@ -1,0 +1,1 @@
+{"version":3,"sources":["pages/error.js"],"names":["Error","props"],"mappings":"iIAAA,mEAEe,SAASA,EAAOC,GAC3B,OACI","file":"static/js/3.8a59b8d4.chunk.js","sourcesContent":["import React from 'react';\r\n\r\nexport default function Error (props) {\r\n    return (\r\n        <h1>404 - this page does not exist...</h1>\r\n    );\r\n}"],"sourceRoot":""}

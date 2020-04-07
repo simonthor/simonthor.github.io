@@ -1,0 +1,2 @@
+(this["webpackJsonpsimonthor.github.io"]=this["webpackJsonpsimonthor.github.io"]||[]).push([[1],{42:function(t,n,e){"use strict";e.r(n),e.d(n,"default",(function(){return h}));var o=e(5),i=e(6),r=e(8),u=e(7),c=e(9),a=e(0),s=e.n(a),h=(e(65),function(t){function n(t){return Object(o.a)(this,n),Object(r.a)(this,Object(u.a)(n).call(this,t))}return Object(c.a)(n,t),Object(i.a)(n,[{key:"render",value:function(){return s.a.createElement("h1",null,"Coming soon...")}}]),n}(s.a.Component))},65:function(t){t.exports=JSON.parse("{}")}}]);
+//# sourceMappingURL=1.7208a210.chunk.js.map
