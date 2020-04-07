@@ -21,7 +21,8 @@ export default function Research() {
             <RefLink href="https://doi.org/10.1029/2019JA026629">Paper</RefLink>
             <p>
                 During 2017 - 2019, I worked at the department of space and plasma physics at KTH Royal Institute of Technology and conducted research about flux transfer events.
-                Using <code>Python</code>, I analyzed and visualized data from the Cluster satellites and OMNI data.
+                Using <code>Python</code>, I analyzed and visualized data from the Cluster satellites and OMNI data. The research was in collaboration with an associate professor at the department.
+                <br/>
                 These results were published in the <i>Journal of Geophysical Research - Space Physics</i> in 2019, and I became one of the youngest in Sweden to ever publish a scientific paper.
                 I also presented at two poster sessions: the Swedish national high school science fair (where I proceeded to the final),
                 and the "Svenska Rymdforskares Samarbetsgrupp" conference (a conference for space researchers in Sweden), both in 2019.
@@ -32,11 +33,14 @@ export default function Research() {
                 Research Science Institute is an international fully paid research summer program worth approximately 8000 USD with over 3000 annual applicants to the 80 available spots,
                 out of which two are reserved for Swedish students.
                 <br/>
-                During this program, I conducted research at the Center for Theoretical Physics on particle physics.
+                During this program, I conducted research at the Center for Theoretical Physics on particle physics, together with two PhD students.
                 I studied quark and gluon jets by simulating high energy particle collisions using the Pythia package with <code>C++</code>.
                 I then analyzed the data using <code>Python</code> to identify the difference between quark and gluon jets.
                 My main goal was to determine whether one of the definitions used for quark and gluon jets is useful.
                 I then managed to show that this definition was in fact not operational.
+                <br/>
+                I presented my results at the end of Research Science Institute through a presentation as well as writing a report.
+                After the program, I continued the research with my mentors and participated in the final of the Swedish national science fair in 2019.
             </p>
         </>
     );
