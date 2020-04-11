@@ -7,6 +7,9 @@ export default class Tips extends React.Component {
         super(props);
 
     }
+
+
+
     render () {
         return (
             <h1>Coming soon...</h1>

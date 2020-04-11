@@ -6,6 +6,7 @@
 - [x] Write [research.js](./src/pages/research.js)
 - [ ] Write [about.js](./src/pages/about.js)
 - [ ] Move tooltip on main screen to always make it visible
+- [ ] Write [tips.js](./src/pages/tips.js)
 
 ## Optional
 - [ ] Add more tips to [tips.json](./src/data/tips.json) file.
