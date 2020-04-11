@@ -51,7 +51,6 @@ export default function Research() {
                 I presented my results at the end of Research Science Institute through a presentation as well as writing a report.
                 After the program, I continued the research with my mentors and participated in the final of the Swedish national science fair in 2019.
             </p>
-
         </>
     );
 }
