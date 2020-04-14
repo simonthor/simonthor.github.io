@@ -11,7 +11,7 @@ export default function About() {
                 I also conduct research at the same university about space physics.
                 Besides research, I have an interest in web development, data science, and science outreach.
             </p>
-            {/*NOTE: These hash links do not work yet.*/}
+            {/*TODO: Implement hash links so that links below work.*/}
             <h2>Research Experience</h2>
             <ul>
                 <li><Link to="/research#FTE">Flux transfer events</Link></li>
