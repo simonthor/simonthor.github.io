@@ -178,6 +178,19 @@
         "season": "all"
     },
     {
+        "name": "Summer STEM Institute",
+        "links":
+        [
+            "https://www.summersteminstitute.org"
+        ],
+        "info": "Kostar pengar",
+        "tags": ["camp", "STEM"],
+        "academic level": {
+            "high school": [1, 2, 3]
+        },
+        "season": "summer"
+    },
+    {
         "name": "S'Cool LAB Summer Camp",
         "links":
         [

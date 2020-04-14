@@ -93,5 +93,4 @@ export default class Tips extends React.Component {
             </>
         );
     }
-
 }
