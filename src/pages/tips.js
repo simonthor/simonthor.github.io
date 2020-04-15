@@ -75,6 +75,7 @@ export default class Tips extends React.Component {
                     <this.state.type>
                         <option value="all">all</option>
                         <option value="camp">camp</option>
+                        <option value="association">association</option>
                         <option value="competition">competition</option>
                         <option value="research">research</option>
                     </this.state.type>

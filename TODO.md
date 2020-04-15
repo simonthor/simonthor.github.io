@@ -1,10 +1,10 @@
 # TODO
 ## Important
 - [x] Enter current tips in the [tips.json](./src/data/tips.json) file.
-- [ ] Change tags to "subjects", "type" etc.
+- [x] Change tags to "subjects", "type" etc.
 - [x] Write [programming.js](./src/pages/programming.js)
 - [x] Write [research.js](./src/pages/research.js)
-- [ ] Write [about.js](./src/pages/about.js)
+- [x] Write [about.js](./src/pages/about.js)
 - [ ] Move tooltip on main screen to always make it visible
 - [ ] Write [tips.js](./src/pages/tips.js)
 
