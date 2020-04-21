@@ -8,7 +8,7 @@ export default class Collapsible extends React.Component {
             cursor: pointer;
             border: solid 1px #f2f2f2;
             padding: 15px;
-            background-color: #0089CC;
+            background-color: #000f29;
             color: #FFF;
         `;
         this.state = {
@@ -22,16 +22,18 @@ export default class Collapsible extends React.Component {
     }
 
     render() {
-        return (<div>
-            <this.state.header onClick={(e)=>this.togglePanel(e)}>
-                {this.props.title}
-            </this.state.header>
-        {this.state.open ? (
-            <div className='content'>
-                {this.props.children}
+        return (
+            <div>
+                <this.state.header onClick={(e)=>this.togglePanel(e)}>
+                    {this.props.title}
+                </this.state.header>
+                {this.state.open ? (
+                <div className='content'>
+                    {this.props.children}
+                </div>
+                ) : null}
             </div>
-        ) : null}
-        </div>);
+        );
     }
 }
 /*

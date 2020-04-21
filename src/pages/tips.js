@@ -1,15 +1,18 @@
 import React from 'react';
 import tips from '../data/tips.json';
 import styled from 'styled-components';
-
+import Collapsible from '../components/collapsible';
 
 export default class Tips extends React.Component {
     constructor(props) {
         super(props);
+        // TODO: Add expand/collapse all button
+        // TODO: improve appearance of buttons with CSS
         const Navigator = styled.div`
             display: grid;
             width: 100%;
-            height: 2rem;
+            height: 3rem;
+            margin-bottom: 1rem;
             grid-template-areas: 
             "search search search search searchButton"
             "season subject type age archive"; {/*include separate academic and age bars?*/}
@@ -39,13 +42,15 @@ export default class Tips extends React.Component {
         `;
 
         this.state = {Navigator: Navigator, searchBar: searchBar, searchButton: searchButton,
-            season: season, subject: subject, type: type, age: age, archive: archive};
+            season: season, subject: subject, type: type, age: age, archive: archive,
+            sortedTips:tips};
 
     }
     getTips () {
         // TODO: add this
         console.log('button pressed');
     }
+
 
     render () {
         return (
@@ -91,6 +96,13 @@ export default class Tips extends React.Component {
                         <label htmlFor="archive">Include archive</label>
                     </this.state.archive>
                 </this.state.Navigator>
+                {/*Renders all tips that has been sorted out using getTips.*/}
+                {this.state.sortedTips.map((tip)=>(
+                    <Collapsible title={tip.name}>
+                        {tip.links.map((link)=>(<a style={{marginRight:'1rem'}} href={link}>Link</a>))}
+                        <p>{tip.info}</p>
+                    </Collapsible>
+                ))}
             </>
         );
     }

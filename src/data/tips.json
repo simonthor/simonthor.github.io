@@ -211,9 +211,9 @@
             "https://scoollab.web.cern.ch/"
         ],
         "info": "Detta är ett tolv dagar långt sommarläger som anordnas vid CERN i Schweiz. 30 gymnasieelever från hela världen samlas under slutet av juli och början av augusti för att lära sig om partikelfysik genom föreläsningar, studiebesök och andra aktiviteter. Lägret och resan dit är helt gratis, men konkurrensen är mycket hög.",
-        "type": ["camp", "physics"],
-        "subject":
-        "subject": , "academic level": {
+        "type": "camp",
+        "subject": "physics",
+        "academic level": {
             "high school": [2, 3]
         },
         "season": "summer",
