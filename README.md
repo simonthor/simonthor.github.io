@@ -10,7 +10,7 @@ The main branch is `react`, which contains the React source code for the website
 
 While the uncompiled code and the compiled code are usually updated to the same version, there may occasionally be a delay until the `master` branch has been updated. 
 
-
+------
 :arrow_down: **Auto-generated text below** :arrow_down:
 
 This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
