@@ -17,6 +17,8 @@ export default class Tips extends React.Component {
             "search search search search searchButton"
             "season subject type age archive"; {/*include separate academic and age bars?*/}
         `;
+        // TODO: cleaner code, e.g. a loop which generates a list of styled components.
+
         const searchBar = styled.input`
             grid-area: search;
             /*width: 100%;*/
@@ -27,6 +29,7 @@ export default class Tips extends React.Component {
         const season = styled.select`
             grid-area: season;        
         `;
+        this.seasonRef = React.createRef();
         const subject = styled.select`
             grid-area: subject;        
         `;
@@ -47,8 +50,8 @@ export default class Tips extends React.Component {
 
     }
     getTips () {
-        // TODO: add this
-        console.log('button pressed');
+        // TODO: write function
+        console.log(this.seasonRef.current.value);
     }
 
 
@@ -61,7 +64,7 @@ export default class Tips extends React.Component {
                     <this.state.searchButton onClick={()=>{this.getTips()}}>
                         Search
                     </this.state.searchButton>
-                    <this.state.season>
+                    <this.state.season ref={this.seasonRef}>
                         <option value="all">all</option>
                         <option value="spring">spring</option>
                         <option value="summer">summer</option>
