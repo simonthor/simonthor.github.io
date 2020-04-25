@@ -1,6 +1,5 @@
 import React from 'react';
 import styled from 'styled-components';
-//import '../styles/jekyll-theme-slate.css'
 
 export default class Page extends React.Component {
     constructor(props) {

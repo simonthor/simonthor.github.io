@@ -17,6 +17,7 @@ export default class Tips extends React.Component {
             "search search search search searchButton"
             "season subject type age archive"; {/*include separate academic and age bars?*/}
         `;
+
         const navWidgetNames = {
             search: 'input', searchButton: 'button', season: 'select', subject: 'select',
             type: 'select', age: 'select', archive: 'div'
@@ -44,12 +45,15 @@ export default class Tips extends React.Component {
     }
 
     getTips () {
+        // clean the criteria inputted by the user and create an object of it.
         const criteria = {};
         for (const optionSelector in this.state.refs) {
             const widget = this.state.refs[optionSelector];
             criteria[optionSelector] = widget.current !== null ? widget.current.value : widget.value;
         }
 
+        // Create an array of the tips that match the criteria above.
+        // Uses the conditionsFulfilled function
         let chosenTips = [];
         tips.forEach(
             (tip)=>{
@@ -60,7 +64,6 @@ export default class Tips extends React.Component {
         );
         this.setState({sortedTips: chosenTips});
     }
-
 
     render () {
         const navWidgets = this.state.navWidgets;
