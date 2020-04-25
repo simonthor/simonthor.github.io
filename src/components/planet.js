@@ -57,7 +57,7 @@ export default class Planet extends React.Component {
         const Container = this.state.content;
         return (
             <>
-                <ReactTooltip id={this.state.text+"-p"} place="bottom" type="dark" effect="solid"/>
+                <ReactTooltip id={this.state.text+"-p"} place="bottom" type="dark" effect="float"/>
                 <Container
                     to={this.state.href} image={this.image}
                     data-for={this.state.text+"-p"} data-tip={this.state.text}
