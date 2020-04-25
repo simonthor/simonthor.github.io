@@ -28,8 +28,8 @@
         "image": "jupiter"
     },
     {
-        "text": "News",
-        "href": "/news",
+        "text": "games",
+        "href": "/games",
         "radius": 90,
         "height": 4.5,
         "width-rel": 2.08,

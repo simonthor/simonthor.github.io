@@ -10,5 +10,5 @@
 
 ## Optional
 - [ ] Add more tips to [tips.json](./src/data/tips.json) file.
-- [ ] Write [game.js](./src/pages/game.js)
+- [ ] Write [games.js](./src/pages/games.js)
 - [ ] Make Tetris
