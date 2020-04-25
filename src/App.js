@@ -40,7 +40,7 @@ export default class App extends React.Component {
                     <Route path='/' render={ ( props ) => ( props.location.pathname !== '/') && <Header key="header"/> }/>
                     <Switch>
                         {this.state.pagePaths.map((pathInfo) => (
-                                <Route path={pathInfo.path}>
+                                <Route path={pathInfo.path} key={pathInfo.path + "-r"}>
                                     <Page key={pathInfo.path}
                                           src={pathInfo.path.substring(1)}
                                           image={pathInfo.image}/>
