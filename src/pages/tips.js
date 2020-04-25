@@ -33,9 +33,32 @@ export default class Tips extends React.Component {
         this.state = {Navigator: Navigator, navWidgets: navWidgets, sortedTips:tips, refs:refs};
 
     }
+
+    conditionsFullFilled(tip, criteria) {
+        console.log(tip['season']);
+        // TODO: add more conditions
+        if (tip['season'] === criteria['season'] || criteria['season'] === 'all') {
+            return !(tip.hasOwnProperty('archive') && tip['archive'] === true);
+        }
+        return false;
+    }
+
     getTips () {
-        // TODO: write function
-        console.log('this.seasonRef.current.value');
+        const criteria = {};
+        for (const optionSelector in this.state.refs) {
+            const widget = this.state.refs[optionSelector];
+            criteria[optionSelector] = widget.current !== null ? widget.current.value : widget.value;
+        }
+
+        let chosenTips = [];
+        tips.forEach(
+            (tip)=>{
+                if (this.conditionsFullFilled(tip, criteria)) {
+                    chosenTips.push(tip);
+                }
+            }
+        );
+        this.setState({sortedTips: chosenTips});
     }
 
 
