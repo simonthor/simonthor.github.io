@@ -17,61 +17,46 @@ export default class Tips extends React.Component {
             "search search search search searchButton"
             "season subject type age archive"; {/*include separate academic and age bars?*/}
         `;
-        // TODO: cleaner code, e.g. a loop which generates a list of styled components.
+        const navWidgetNames = {
+            search: 'input', searchButton: 'button', season: 'select', subject: 'select',
+            type: 'select', age: 'select', archive: 'div'
+        };
 
-        const searchBar = styled.input`
-            grid-area: search;
-            /*width: 100%;*/
-        `;
-        const searchButton = styled.button`
-            grid-area: searchButton;
-        `;
-        const season = styled.select`
-            grid-area: season;        
-        `;
-        this.seasonRef = React.createRef();
-        const subject = styled.select`
-            grid-area: subject;        
-        `;
-        const type = styled.select`
-            grid-area: type;   
-        `;
-        // Currently, this one is set to academic level instead of age.
-        const age = styled.select`
-            grid-area: age;
-        `;
-        const archive = styled.div`
-            grid-area: archive;
-        `;
+        let refs = {};
+        let navWidgets = {};
+        for (const widgetName in navWidgetNames) {
+            navWidgets[widgetName] = styled(navWidgetNames[widgetName])`grid-area: ${widgetName}`;
+            refs[widgetName] = React.createRef();
+        }
 
-        this.state = {Navigator: Navigator, searchBar: searchBar, searchButton: searchButton,
-            season: season, subject: subject, type: type, age: age, archive: archive,
-            sortedTips:tips};
+        // Probably bad practice
+        this.state = {Navigator: Navigator, navWidgets: navWidgets, sortedTips:tips, refs:refs};
 
     }
     getTips () {
         // TODO: write function
-        console.log(this.seasonRef.current.value);
+        console.log('this.seasonRef.current.value');
     }
 
 
     render () {
+        const navWidgets = this.state.navWidgets;
         return (
             <>
                 <h1>Tips and Links to STEM-related Activities</h1>
                 <this.state.Navigator>
-                    <this.state.searchBar type="text" placeholder="Enter some text..."/>
-                    <this.state.searchButton onClick={()=>{this.getTips()}}>
+                    <navWidgets.search type="text" placeholder="Enter some text..." ref={this.state.refs.searchBar}/>
+                    <navWidgets.searchButton onClick={()=>{this.getTips()}}>
                         Search
-                    </this.state.searchButton>
-                    <this.state.season ref={this.seasonRef}>
+                    </navWidgets.searchButton>
+                    <navWidgets.season ref={this.state.refs.season}>
                         <option value="all">all</option>
                         <option value="spring">spring</option>
                         <option value="summer">summer</option>
                         <option value="autumn">autumn</option>
                         <option value="winter">winter</option>
-                    </this.state.season>
-                    <this.state.subject>
+                    </navWidgets.season>
+                    <navWidgets.subject ref={this.state.refs.subject}>
                         <option value="all">all</option>
                         <option value="physics">physics</option>
                         <option value="programming">programming</option>
@@ -79,30 +64,30 @@ export default class Tips extends React.Component {
                         <option value="mathematics">mathematics</option>
                         <option value="biology">biology</option>
                         <option value="biology">biology</option>
-                    </this.state.subject>
-                    <this.state.type>
+                    </navWidgets.subject>
+                    <navWidgets.type ref={this.state.refs.type}>
                         <option value="all">all</option>
                         <option value="camp">camp</option>
                         <option value="association">association</option>
                         <option value="competition">competition</option>
                         <option value="research">research</option>
-                    </this.state.type>
+                    </navWidgets.type>
                     {/*TODO: change option below to more specific years in academic level or age instead?*/}
-                    <this.state.age>
+                    <navWidgets.age ref={this.state.refs.age}>
                         <option value="all">all</option>
                         <option value="high school">high school</option>
                         <option value="university">university</option>
-                    </this.state.age>
+                    </navWidgets.age>
                     {/*TODO: change to slider?*/}
-                    <this.state.archive>
+                    <navWidgets.archive ref={this.state.refs.archive}>
                         <input type="checkbox" name="archive"/>
                         <label htmlFor="archive">Include archive</label>
-                    </this.state.archive>
+                    </navWidgets.archive>
                 </this.state.Navigator>
                 {/*Renders all tips that has been sorted out using getTips.*/}
                 {this.state.sortedTips.map((tip)=>(
-                    <Collapsible title={tip.name}>
-                        {tip.links.map((link)=>(<a style={{marginRight:'1rem'}} href={link}>Link</a>))}
+                    <Collapsible title={tip.name} key={tip.name}>
+                        {tip.links.map((link)=>(<a style={{marginRight:'1rem'}} href={link} key={link}>Link</a>))}
                         <p>{tip.info}</p>
                     </Collapsible>
                 ))}
