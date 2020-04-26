@@ -20,7 +20,7 @@ export default class Tips extends React.Component {
 
         const navWidgetNames = {
             search: 'input', searchButton: 'button', season: 'select', subject: 'select',
-            type: 'select', age: 'select', archive: 'div'
+            type: 'select', age: 'div', archive: 'div'
         };
 
         let refs = {};
@@ -36,10 +36,16 @@ export default class Tips extends React.Component {
     }
 
     conditionsFullFilled(tip, criteria) {
-        console.log(tip['season']);
-        // TODO: add more conditions
+        // Warning: disgustingly long nested if statement. Fix?
         if (tip['season'] === criteria['season'] || criteria['season'] === 'all') {
-            return !(tip.hasOwnProperty('archive') && tip['archive'] === true);
+            if (tip['type'].includes(criteria['type']) || criteria['type'] === 'all') {
+                if (tip['subject'] === criteria['subject'] || criteria['subject'] === 'all') {
+                    if (!criteria['age'] || !tip['academic level'].hasOwnProperty('age') ||
+                        tip['academic level'].age.includes(parseInt(criteria['age'], 10))) {
+                        return !tip.hasOwnProperty('archive') || (tip['archive'] && criteria['archive']);
+                    }
+                }
+            }
         }
         return false;
     }
@@ -49,9 +55,14 @@ export default class Tips extends React.Component {
         const criteria = {};
         for (const optionSelector in this.state.refs) {
             const widget = this.state.refs[optionSelector];
-            criteria[optionSelector] = widget.current !== null ? widget.current.value : widget.value;
+            if (widget.current === null) {
+                criteria[optionSelector] = widget.value;
+            } else if (widget.current.type === 'checkbox') {
+                criteria[optionSelector] = widget.current.checked;
+            } else {
+                criteria[optionSelector] = widget.current.value;
+            }
         }
-
         // Create an array of the tips that match the criteria above.
         // Uses the conditionsFulfilled function
         let chosenTips = [];
@@ -98,15 +109,12 @@ export default class Tips extends React.Component {
                         <option value="competition">competition</option>
                         <option value="research">research</option>
                     </navWidgets.type>
-                    {/*TODO: change option below to more specific years in academic level or age instead?*/}
-                    <navWidgets.age ref={this.state.refs.age}>
-                        <option value="all">all</option>
-                        <option value="high school">high school</option>
-                        <option value="university">university</option>
+                    <navWidgets.age>
+                        <label htmlFor="age">Age:</label>
+                        <input type="number" name="age" min="5" max="30" ref={this.state.refs.age}/>
                     </navWidgets.age>
-                    {/*TODO: change to slider?*/}
-                    <navWidgets.archive ref={this.state.refs.archive}>
-                        <input type="checkbox" name="archive"/>
+                    <navWidgets.archive>
+                        <input type="checkbox" name="archive" ref={this.state.refs.archive}/>
                         <label htmlFor="archive">Include archive</label>
                     </navWidgets.archive>
                 </this.state.Navigator>
