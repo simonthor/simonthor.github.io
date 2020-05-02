@@ -36,18 +36,25 @@ export default class Tips extends React.Component {
     }
 
     conditionsFullFilled(tip, criteria) {
-        // Warning: disgustingly long nested if statement. Fix?
-        if (tip['season'] === criteria['season'] || criteria['season'] === 'all') {
-            if (tip['type'].includes(criteria['type']) || criteria['type'] === 'all') {
-                if (tip['subject'] === criteria['subject'] || criteria['subject'] === 'all') {
-                    if (!criteria['age'] || !tip['academic level'].hasOwnProperty('age') ||
-                        tip['academic level'].age.includes(parseInt(criteria['age'], 10))) {
-                        return !tip.hasOwnProperty('archive') || (tip['archive'] && criteria['archive']);
-                    }
-                }
-            }
+        if (!(tip['season'] === criteria['season'] || criteria['season'] === 'all')) {
+            return false;
         }
-        return false;
+        else if (!(tip['type'].includes(criteria['type']) || criteria['type'] === 'all')) {
+            return false;
+        }
+        else if (!(tip['subject'] === criteria['subject'] || criteria['subject'] === 'all')) {
+            return false;
+        }
+        else if (!(!criteria['age'] || !tip['academic level'].hasOwnProperty('age') ||
+                        tip['academic level'].age.includes(parseInt(criteria['age'], 10)))) {
+            return false;
+        }
+        else if (!(criteria['archive'] || !tip.hasOwnProperty('archive') || !tip['archive'])) {
+            return false;
+        }
+        else {
+            return true;
+        }
     }
 
     getTips () {
