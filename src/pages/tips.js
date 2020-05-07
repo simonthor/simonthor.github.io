@@ -54,12 +54,7 @@ export default class Tips extends React.Component {
             (tip['info'] !== null && tip['info'].toLowerCase().includes(tip['name'].toLowerCase())))) {
             return false;
         }
-        else if (!(criteria['archive'] || !tip.hasOwnProperty('archive') || !tip['archive'])) {
-            return false;
-        }
-        else {
-            return true;
-        }
+        else return criteria['archive'] || !tip.hasOwnProperty('archive') || !tip['archive'];
     }
 
     getTips () {
