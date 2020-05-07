@@ -49,6 +49,11 @@ export default class Tips extends React.Component {
                         tip['academic level'].age.includes(parseInt(criteria['age'], 10)))) {
             return false;
         }
+        else if (!(tip['links'].some((link)=>(link.includes(criteria['search']))) ||
+            tip['name'].toLowerCase().includes(criteria['search'].toLowerCase()) ||
+            (tip['info'] !== null && tip['info'].toLowerCase().includes(tip['name'].toLowerCase())))) {
+            return false;
+        }
         else if (!(criteria['archive'] || !tip.hasOwnProperty('archive') || !tip['archive'])) {
             return false;
         }
@@ -89,7 +94,7 @@ export default class Tips extends React.Component {
             <>
                 <h1>Tips and Links to STEM-related Activities</h1>
                 <this.state.Navigator>
-                    <navWidgets.search type="text" placeholder="Enter some text..." ref={this.state.refs.searchBar}/>
+                    <navWidgets.search type="text" placeholder="Enter some text..." ref={this.state.refs.search}/>
                     <navWidgets.searchButton onClick={()=>{this.getTips()}}>
                         Search
                     </navWidgets.searchButton>
