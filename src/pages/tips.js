@@ -36,7 +36,7 @@ export default class Tips extends React.Component {
     }
 
     conditionsFullFilled(tip, criteria) {
-        if (!(tip['season'] === criteria['season'] || criteria['season'] === 'all')) {
+        if (!(tip['season'] === criteria['season'] || criteria['season'] === 'all' || tip['season'] === 'all')) {
             return false;
         }
         else if (!(tip['type'].includes(criteria['type']) || criteria['type'] === 'all')) {
