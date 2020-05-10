@@ -6,7 +6,8 @@
             "https://ungaforskare.se/stipendier-gymnasiet",
             "https://www.cee.org/research-science-institute"
         ],
-        "info": null,
+        "info": "Sex veckor lång sommarforskarskola för alla som ska börja sista året på gymnasiet. Anordnas på MIT i USA, med 80 studenter, varav två är svenska. Programmet består av ett forskningsprojekt med forskare vid toppuniversitet, föreläsningar och mycket mer. Helt gratis för deltagare.",
+
         "type": ["research", "camp"],
         "subject": "STEM",
         "academic level": {
