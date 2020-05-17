@@ -30,12 +30,22 @@ export default class Tips extends React.Component {
             refs[widgetName] = React.createRef();
         }
 
-        // Probably bad practice
-        this.state = {Navigator: Navigator, navWidgets: navWidgets, sortedTips:tips, refs:refs};
+        this.getTips = this.getTips.bind(this);
+        this.getInputChange = (event) => {
+            console.log(event.target);
+            if (event.target.type === 'checkbox') {
+                this.setState({[event.target.id]: event.target.checked})
+            }else {
+                this.setState({[event.target.id]: event.target.value})
+            }
+        };
 
+        this.Navigator = Navigator;
+        this.navWidgets = navWidgets;
+        this.state = {search: '', season: 'all', subject: 'all', type: 'all', age: undefined, archive: false, sortedTips: tips};
     }
 
-    conditionsFullFilled(tip, criteria) {
+    static conditionsFullFilled(tip, criteria) {
         if (!(tip['season'] === criteria['season'] || criteria['season'] === 'all' || tip['season'] === 'all')) {
             return false;
         }
@@ -58,24 +68,12 @@ export default class Tips extends React.Component {
     }
 
     getTips () {
-        // clean the criteria inputted by the user and create an object of it.
-        const criteria = {};
-        for (const optionSelector in this.state.refs) {
-            const widget = this.state.refs[optionSelector];
-            if (widget.current === null) {
-                criteria[optionSelector] = widget.value;
-            } else if (widget.current.type === 'checkbox') {
-                criteria[optionSelector] = widget.current.checked;
-            } else {
-                criteria[optionSelector] = widget.current.value;
-            }
-        }
-        // Create an array of the tips that match the criteria above.
-        // Uses the conditionsFulfilled function
+        const {sortedTips, ...criteria} = this.state;
+
         let chosenTips = [];
         tips.forEach(
             (tip)=>{
-                if (this.conditionsFullFilled(tip, criteria)) {
+                if (Tips.conditionsFullFilled(tip, criteria)) {
                     chosenTips.push(tip);
                 }
             }
@@ -84,23 +82,23 @@ export default class Tips extends React.Component {
     }
 
     render () {
-        const navWidgets = this.state.navWidgets;
+        const navWidgets = this.navWidgets;
         return (
             <>
                 <h1>Tips and Links to STEM-related Activities</h1>
-                <this.state.Navigator>
-                    <navWidgets.search type="text" placeholder="Enter some text..." ref={this.state.refs.search}/>
-                    <navWidgets.searchButton onClick={()=>{this.getTips()}}>
+                <this.Navigator>
+                    <navWidgets.search type="text" placeholder="Enter some text..." id="search" onInput={this.getInputChange}/>
+                    <navWidgets.searchButton onClick={this.getTips}>
                         Search
                     </navWidgets.searchButton>
-                    <navWidgets.season ref={this.state.refs.season}>
+                    <navWidgets.season id="season" onChange={this.getInputChange}>
                         <option value="all">all</option>
                         <option value="spring">spring</option>
                         <option value="summer">summer</option>
                         <option value="autumn">autumn</option>
                         <option value="winter">winter</option>
                     </navWidgets.season>
-                    <navWidgets.subject ref={this.state.refs.subject}>
+                    <navWidgets.subject id="subject" onChange={this.getInputChange}>
                         <option value="all">all</option>
                         <option value="physics">physics</option>
                         <option value="programming">programming</option>
@@ -109,7 +107,7 @@ export default class Tips extends React.Component {
                         <option value="biology">biology</option>
                         <option value="biology">biology</option>
                     </navWidgets.subject>
-                    <navWidgets.type ref={this.state.refs.type}>
+                    <navWidgets.type id="type" onChange={this.getInputChange}>
                         <option value="all">all</option>
                         <option value="camp">camp</option>
                         <option value="association">association</option>
@@ -118,13 +116,13 @@ export default class Tips extends React.Component {
                     </navWidgets.type>
                     <navWidgets.age>
                         <label htmlFor="age">Age:</label>
-                        <input type="number" name="age" min="5" max="30" ref={this.state.refs.age}/>
+                        <input type="number" name="age" min="5" max="30" id="age" onChange={this.getInputChange}/>
                     </navWidgets.age>
                     <navWidgets.archive>
-                        <input type="checkbox" name="archive" ref={this.state.refs.archive}/>
+                        <input type="checkbox" name="archive" id="archive" onChange={this.getInputChange}/>
                         <label htmlFor="archive">Include archive</label>
                     </navWidgets.archive>
-                </this.state.Navigator>
+                </this.Navigator>
                 {/*Renders all tips that has been sorted out using getTips.*/}
                 {this.state.sortedTips.map((tip)=>(
                     <Collapsible title={tip.name} key={tip.name}>
