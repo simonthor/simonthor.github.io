@@ -8,7 +8,6 @@ export default class Tips extends React.Component {
         super(props);
         // TODO: Add expand/collapse all button
         // TODO: improve appearance of buttons with CSS
-        // TODO: remove search button and automatically update search items
         const Navigator = styled.div`
             display: grid;
             width: 100%;
@@ -43,8 +42,7 @@ export default class Tips extends React.Component {
 
         this.Navigator = Navigator;
         this.navWidgets = navWidgets;
-        this.state = {search: '', season: 'all', subject: 'all', type: 'all', age: undefined, archive: false};
-        this.sortedTips = tips;
+        this.state = {search: '', season: 'all', subject: 'all', type: 'all', age: undefined, archive: false, sortedTips: tips};
     }
 
     static conditionsFullFilled(tip, criteria) {
@@ -70,20 +68,8 @@ export default class Tips extends React.Component {
     }
 
     getTips () {
-        // clean the criteria inputted by the user and create an object of it.
-        const criteria = this.state;
-        /*for (const optionSelector in this.state.refs) {
-            const widget = this.state.refs[optionSelector];
-            if (widget.current === null) {
-                criteria[optionSelector] = widget.value;
-            } else if (widget.current.type === 'checkbox') {
-                criteria[optionSelector] = widget.current.checked;
-            } else {
-                criteria[optionSelector] = widget.current.value;
-            }
-        }*/
-        // Create an array of the tips that match the criteria above.
-        // Uses the conditionsFulfilled function
+        const {sortedTips, ...criteria} = this.state;
+
         let chosenTips = [];
         tips.forEach(
             (tip)=>{
@@ -92,7 +78,7 @@ export default class Tips extends React.Component {
                 }
             }
         );
-        this.sortedTips = chosenTips;
+        this.setState({sortedTips: chosenTips});
     }
 
     render () {
@@ -121,7 +107,7 @@ export default class Tips extends React.Component {
                         <option value="biology">biology</option>
                         <option value="biology">biology</option>
                     </navWidgets.subject>
-                    <navWidgets.type onChange={this.getInputChange}>
+                    <navWidgets.type id="type" onChange={this.getInputChange}>
                         <option value="all">all</option>
                         <option value="camp">camp</option>
                         <option value="association">association</option>
@@ -138,7 +124,7 @@ export default class Tips extends React.Component {
                     </navWidgets.archive>
                 </this.Navigator>
                 {/*Renders all tips that has been sorted out using getTips.*/}
-                {this.sortedTips.map((tip)=>(
+                {this.state.sortedTips.map((tip)=>(
                     <Collapsible title={tip.name} key={tip.name}>
                         {tip.links.map((link)=>(<a style={{marginRight:'1rem'}} href={link} key={link}>Link</a>))}
                         <p>{tip.info}</p>
