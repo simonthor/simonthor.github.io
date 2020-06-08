@@ -29,7 +29,8 @@
             "high school": [1, 2, 3]
         },
         "season": "winter",
-        "months": [12]
+        "months": [12],
+        "archive": true
     },
     {
         "name": "Forskarmöten",
