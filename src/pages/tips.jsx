@@ -15,7 +15,7 @@ export default class Tips extends React.Component {
             margin-bottom: 1rem;
             grid-template-areas: 
             "search search search search searchButton"
-            "season subject type age archive"; {/*include separate academic and age bars?*/}
+            "season subject type age archive"; {/*TODO: include separate academic and age bars?*/}
         `;
 
         const navWidgetNames = {

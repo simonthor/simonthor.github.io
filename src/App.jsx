@@ -20,6 +20,7 @@ import Test from './test';
 export default class App extends React.Component {
     constructor(props) {
         super(props);
+        // TODO: this object should not be hard coded but instead loaded from data/planets.json
         // Paths with same format (Page format) but different contents:
         const pagePaths = [
             {path: '/about', image: 'sun'},
