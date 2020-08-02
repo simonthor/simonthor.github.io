@@ -86,6 +86,7 @@ export default class Tips extends React.Component {
         return (
             <>
                 <h1>Tips and Links to STEM-related Activities</h1>
+                <p style="text-align: center; font-size: 0.7rem">Disclaimer: While I do try to keep this site updated, the information here could still be outdated or incorrect.</p>
                 <this.Navigator>
                     <navWidgets.search type="text" placeholder="Enter some text..." id="search" onInput={this.getInputChange}/>
                     <navWidgets.searchButton onClick={this.getTips}>
