@@ -22,7 +22,7 @@
         [
             "https://au.se/astronomistipendium"
         ],
-        "info": "En forskarskola under vintern som anordnas av European Southern Observatory vid Aosta Valley, Italien. Cirka 50 gymnasieelever från tiotals länder samlas och deltar i föreläsningar, stjärnskådningar och sociala aktiviteter."
+        "info": "En forskarskola under vintern som anordnas av European Southern Observatory vid Aosta Valley, Italien. Cirka 50 gymnasieelever från tiotals länder samlas och deltar i föreläsningar, stjärnskådningar och sociala aktiviteter.",
         "type": ["camp"],
         "subject": "astronomy",
         "academic level": {
@@ -38,7 +38,7 @@
         [
             "https://www.astronomiskungdom.se/rymdstipendium/", "https://spacecamp.no/"
         ],
-        "info": "En forskarskola under sommaren som anordnas i Norge. Lägret har fokus på rymdteknik och rymdfart."
+        "info": "En forskarskola under sommaren som anordnas i Norge. Lägret har fokus på rymdteknik och rymdfart.",
         "type": ["camp"],
         "subject": "astronomy",
         "academic level": {
