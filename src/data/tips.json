@@ -17,6 +17,22 @@
         "months": [6, 7, 8]
     },
     {
+        "name": "Rays for excellence",
+        "links":
+        [
+            "https://raysforexcellence.se/"
+        ],
+        "info": "Fyra veckor lång sommarforskarskola i Strängnäs, Sverige, för ungdomar som avslutat andra året på gymnasiet. Cirka 24 gymnasieelever från Sverige och Finland samlas och deltar i ett forskningsprojekt i två veckor med professionella forskare som handledare. Även föreläsningar och sociala aktiviteter anordnas. Programmet är gratis för deltagare, inklusive boende och mat.",
+        "type": ["camp", "research"],
+        "subject": "STEM",
+        "academic level": {
+            "high school": [2]
+        },
+        "season": "summer",
+        "months": [6, 7],
+        "archive": false
+    },
+    {
         "name": "ESO Astronomy Camp",
         "links":
         [
