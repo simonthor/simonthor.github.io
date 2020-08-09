@@ -63,7 +63,37 @@
         "season": "autumn",
         "archive": true
     },
-
+    {
+        "name": "Karolinska institutets sommarforskarskola för gymnasieelever",
+        "links":
+        [
+            "https://utbildning.ki.se/sommarforskarskola-med-biomedicinskt-inriktning-for-gymnasieelever-0", "https://utbildning.ki.se/sommarforskarskola-i-berakningsbiologi-och-bioinformatik-for-gymnasieelever"
+        ],
+        "info": "En sommarforskarskola för gymnasieelever som avslutat andra eller tredje året. Inkluderar fyra veckor av forskning vid Karolinska institutet. Samtliga deltagare får en matersättning på 3000 kr. För de som inte bor i Stockholmsregionen ordnas även gratis boende.",
+        "type": ["camp", "research"],
+        "subject": "biology",
+        "academic level": {
+            "high school": [2, 3]
+        },
+        "season": "summer",
+        "months": [6, 7, 8],
+        "archive": false
+    },
+    {
+        "name": "Institute of Competition Sciences",
+        "links":
+        [
+            "https://www.competitionsciences.org/competitions/"
+        ],
+        "info": "En hemsida med information om olika typer av tävlingar. Mest fokus på USA.",
+        "type": ["meta"],
+        "subject": "STEM",
+        "academic level": {
+            "age": [5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26]
+        },
+        "season": "all",
+        "archive": false
+    },
     {
         "name": "ESO Astronomy Camp",
         "links":
