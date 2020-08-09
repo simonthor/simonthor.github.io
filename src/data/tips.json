@@ -33,6 +33,38 @@
         "archive": false
     },
     {
+        "name": "High School Students Internship Programme",
+        "links":
+        [
+            "https://hssip.web.cern.ch/"
+        ],
+        "info": "Två veckor långt internship vid CERN, Schweiz, för gymnasieelever. Varje år väljs ett antal CERN-medlemsländer ut som skickar ett antal deltagare var. Programmet består av arbete, föreläsningar och sociala aktiviteter på CERN. HSSIP är gratis för deltagare, inklusive mat, boende och resa till CERN.",
+        "type": ["camp"],
+        "subject": "STEM",
+        "academic level": {
+            "high school": [1, 2, 3],
+            "age": [16, 17, 18, 19]
+        },
+        "season": "summer",
+        "archive": false
+    },
+    {
+        "name": "Google Science Fair",
+        "links":
+        [
+            "https://en.wikipedia.org/wiki/Google_Science_Fair"
+        ],
+        "info": "En internationell forskningstävling för gymnasieelever. Anordnas online. Gratis att delta.",
+        "type": ["competition"],
+        "subject": "STEM",
+        "academic level": {
+            "high school": [1, 2, 3]
+        },
+        "season": "autumn",
+        "archive": true
+    },
+
+    {
         "name": "ESO Astronomy Camp",
         "links":
         [
