@@ -1,0 +1,15 @@
+{
+  "short_name": "Simon Thor",
+  "name": "Simon Thor's website (made with React)",
+  "icons": [
+    {
+      "src": "favicon.ico",
+      "sizes": "64x64 32x32 24x24 16x16",
+      "type": "image/x-icon"
+    }
+  ],
+  "start_url": ".",
+  "display": "standalone",
+  "theme_color": "#203864",
+  "background_color": "#ffffff"
+}

@@ -1,0 +1,1 @@
+{"version":3,"sources":["pages/games.jsx"],"names":["Games"],"mappings":"iIAAA,mEAEe,SAASA,IACpB,OAAO","file":"static/js/4.89e5f8c3.chunk.js","sourcesContent":["import React from 'react';\r\n\r\nexport default function Games (){\r\n    return <h1>Coming soon...</h1>;\r\n}"],"sourceRoot":""}
