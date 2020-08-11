@@ -23,16 +23,13 @@ export default class Tips extends React.Component {
             type: 'select', age: 'div', archive: 'div'
         };
 
-        let refs = {};
         let navWidgets = {};
         for (const widgetName in navWidgetNames) {
             navWidgets[widgetName] = styled(navWidgetNames[widgetName])`grid-area: ${widgetName}`;
-            refs[widgetName] = React.createRef();
         }
 
         this.getTips = this.getTips.bind(this);
         this.getInputChange = (event) => {
-            console.log(event.target);
             if (event.target.type === 'checkbox') {
                 this.setState({[event.target.id]: event.target.checked})
             }else {
@@ -86,7 +83,6 @@ export default class Tips extends React.Component {
         return (
             <>
                 <h1>Tips and Links to STEM-related Activities</h1>
-                <p style="text-align: center; font-size: 0.7rem">Disclaimer: While I do try to keep this site updated, the information here could still be outdated or incorrect.</p>
                 <this.Navigator>
                     <navWidgets.search type="text" placeholder="Enter some text..." id="search" onInput={this.getInputChange}/>
                     <navWidgets.searchButton onClick={this.getTips}>
@@ -131,6 +127,9 @@ export default class Tips extends React.Component {
                         <p>{tip.info}</p>
                     </Collapsible>
                 ))}
+                <p style={{textAlign: 'center', fontSize: '0.7rem'}}>
+                    Disclaimer: While I do try to keep this site updated, the information here could still be outdated or incorrect.
+                </p>
             </>
         );
     }
