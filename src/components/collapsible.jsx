@@ -1,5 +1,6 @@
 import React from 'react';
 import styled from 'styled-components';
+import {textColor, baseColor} from '../constants';
 
 export default class Collapsible extends React.Component {
     constructor(props){
@@ -8,8 +9,8 @@ export default class Collapsible extends React.Component {
             cursor: pointer;
             border: solid 1px #f2f2f2;
             padding: 15px;
-            background-color: #000f29;
-            color: #FFF;
+            background-color: ${baseColor};
+            color: ${textColor};
         `;
         this.state = {
             open: false,
