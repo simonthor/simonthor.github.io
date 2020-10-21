@@ -10,6 +10,9 @@ The main branch is `react`, which contains the React source code for the website
 
 While the uncompiled code and the compiled code are usually updated to the same version, there may occasionally be a delay until the `master` branch has been updated. 
 
+## License
+The license for the code can be found (here)[LICENSE]. This license does not cover text about me and all images on the website. These are instead copyrighted.
+
 ------
 :arrow_down: **Auto-generated text below** :arrow_down:
 
