@@ -2,6 +2,7 @@ import React from 'react';
 import tips from '../data/tips.json';
 import styled from 'styled-components';
 import Collapsible from '../components/collapsible';
+import {baseColor, textColor} from '../constants';
 
 export default class Tips extends React.Component {
     constructor(props) {
@@ -25,7 +26,12 @@ export default class Tips extends React.Component {
 
         let navWidgets = {};
         for (const widgetName in navWidgetNames) {
-            navWidgets[widgetName] = styled(navWidgetNames[widgetName])`grid-area: ${widgetName}`;
+            navWidgets[widgetName] = styled(navWidgetNames[widgetName])`
+                grid-area: ${widgetName};
+                background-color: ${baseColor};
+                color: ${textColor};
+                border: white;
+            `;
         }
 
         this.getTips = this.getTips.bind(this);
@@ -135,6 +141,7 @@ export default class Tips extends React.Component {
                 <p style={{textAlign: 'center', fontSize: '0.7rem'}}>
                     Disclaimer: While I do try to keep this site updated, the information here could still be outdated or incorrect.
                 </p>
+                <svg src="../"></svg>
             </>
         );
     }

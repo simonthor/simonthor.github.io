@@ -10,7 +10,7 @@ export default class Header extends React.Component {
             href: "/",
             image: "favicon"
         };
-        this.state = {planets: [home, ...jsonplanets]};
+        this.planets = [home, ...jsonplanets];
     }
 
     customizeProps (props) {
@@ -21,7 +21,7 @@ export default class Header extends React.Component {
     };
 
     render() {
-        const planets = this.state.planets;
+        const planets = this.planets;
         // TODO: add margin directly to planets using styled-components
         return (
             <nav style={{margin: '1rem'}}>

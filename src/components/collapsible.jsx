@@ -12,10 +12,9 @@ export default class Collapsible extends React.Component {
             background-color: ${baseColor};
             color: ${textColor};
         `;
-        this.state = {
-            open: false,
-            header: Header
-        };
+        this.state = {open: false};
+        this.header = Header;
+
     }
 
     togglePanel(e){
@@ -25,9 +24,9 @@ export default class Collapsible extends React.Component {
     render() {
         return (
             <div>
-                <this.state.header onClick={(e)=>this.togglePanel(e)}>
+                <this.header onClick={(e)=>this.togglePanel(e)}>
                     {this.props.title}
-                </this.state.header>
+                </this.header>
                 {this.state.open ? (
                 <div className='content'>
                     {this.props.children}

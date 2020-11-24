@@ -4,9 +4,9 @@ import styled from 'styled-components';
 export default class Page extends React.Component {
     constructor(props) {
         super(props);
-        const Content = React.lazy(()=>(import('../pages/' + this.state.props.src)));
+        this.content = React.lazy(()=>(import('../pages/' + props.src)));
 
-        const Sky = styled.div`
+        this.background = styled.div`
             flex: 1;
             background-image: linear-gradient(#000115, #1f1844, lightblue);
             max-width: 100%;
@@ -199,29 +199,28 @@ export default class Page extends React.Component {
             }
         `;
 
-        const Planet = styled.div`
-            background-image: url(${require('../images/' + props.image + '.svg')});
-            position: absolute;
+        this.planet = styled.div`
+            background-image: url(${require('../images/' + props.image + '_surface.svg')});
+            position: relative;
             bottom: 0;
             height: 10rem;
             width: 100%;
             background-size: cover;
             background-repeat: no-repeat;
         `;
-        this.state = {content: Content, background: Sky, planet: Planet, props};
     }
 
     render() {
         // TODO: make new planet images
         return (
-            <this.state.background>
+            <this.background>
                 <React.Suspense fallback={'loading...'}>
-                    <this.state.content/>
+                    <this.content/>
                 </React.Suspense>
                 {/*This removes black bar at bottom of page*/}
                 <span style={{height:'1rem', display:'block'}}/>
-                {/*<this.state.planet/>*/}
-            </this.state.background>
+                {<this.planet/>}
+            </this.background>
         );
     }
 }

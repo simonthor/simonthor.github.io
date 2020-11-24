@@ -22,15 +22,13 @@ export default class App extends React.Component {
         super(props);
         // TODO: this object should not be hard coded but instead loaded from data/planets.json
         // Paths with same format (Page format) but different contents:
-        const pagePaths = [
+        this.pagePaths = [
             {path: '/about', image: 'sun'},
             {path: '/tips', image: 'jupiter'},
             {path: '/programming', image: 'earth'},
             {path: '/research', image: 'mars'},
             {path: '/games', image: 'saturn'}
         ];
-
-        this.state = {pagePaths: pagePaths};
     }
 
     render() {
@@ -40,7 +38,7 @@ export default class App extends React.Component {
                 <Router>
                     <Route path='/' render={ ( props ) => ( props.location.pathname !== '/') && <Header key="header"/> }/>
                     <Switch>
-                        {this.state.pagePaths.map((pathInfo) => (
+                        {this.pagePaths.map((pathInfo) => (
                                 <Route path={pathInfo.path} key={pathInfo.path + "-r"}>
                                     <Page key={pathInfo.path}
                                           src={pathInfo.path.substring(1)}
