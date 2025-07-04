@@ -4,7 +4,7 @@ import styled from 'styled-components';
 export default class Page extends React.Component {
     constructor(props) {
         super(props);
-        this.content = React.lazy(()=>(import('../pages/' + props.src)));
+        this.content = React.lazy(() => import(`../pages/${props.src}`));
 
         this.background = styled.div`
             flex: 1;
@@ -200,7 +200,7 @@ export default class Page extends React.Component {
         `;
 
         this.planet = styled.div`
-            background-image: url(${require('../images/' + props.image + '_surface.svg')});
+            background-image: url('/images/${props.image}_surface.svg');
             position: relative;
             bottom: 0;
             height: 10rem;

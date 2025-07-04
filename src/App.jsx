@@ -14,7 +14,6 @@ import Page from './components/page';
 // While Test can be rendered using Page, it should not depend on bugs in Page itself.
 // Hence its standalone import
 import Test from './test';
-//import GameMenu from './pages/games';
 
 
 export default class App extends React.Component {
@@ -27,7 +26,7 @@ export default class App extends React.Component {
             {path: '/tips', image: 'jupiter'},
             {path: '/programming', image: 'earth'},
             {path: '/research', image: 'mars'},
-            {path: '/games', image: 'saturn'}
+            {path: '/fractals', image: 'saturn'}
         ];
     }
 

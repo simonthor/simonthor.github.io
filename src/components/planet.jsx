@@ -18,7 +18,7 @@ export default class Planet extends React.Component {
             text-align: center;
             color: white;
             height: ${props.height}rem; width: ${width}rem; line-height: ${props.height}rem;
-            background-image: url("${require('../images/'+ props.image + '.svg')}");
+            background-image: url("/images/${props.image}.svg");
             background-size: cover;
         `;
 
