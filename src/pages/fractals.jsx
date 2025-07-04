@@ -44,10 +44,15 @@ export default function Fractals() {
                 let z = { real: 0, imag: 0 };
                 let iter = 0;
 
-                // z = z^2 + c until |z| > 2 or max iterations
                 while (z.real * z.real + z.imag * z.imag <= 4 && iter < maxIterations) {
-                    const real = z.real * z.real - z.imag * z.imag + c.real;
-                    const imag = 2 * z.real * z.imag + c.imag;
+                    // Mandelbrot:
+                    // z = z^2 + c until |z| > 2 or max iterations
+                    // const real = z.real * z.real - z.imag * z.imag + c.real;
+                    // const imag = 2 * z.real * z.imag + c.imag;
+                    // Burning Ship:
+                    // z = |Re(z)|^2 - |Im(z)|^2 + c
+                    const real = z.real*z.real - z.imag*z.imag + c.real;
+                    const imag = Math.abs(2*z.real*z.imag) + c.imag;
                     z.real = real;
                     z.imag = imag;
                     iter++;
@@ -64,8 +69,8 @@ export default function Fractals() {
                     // Points outside are colored based on iteration count
                     const color = iter / maxIterations * 255;
                     imageData.data[idx] = color;
-                    imageData.data[idx + 1] = 0;
-                    imageData.data[idx + 2] = color * 2;
+                    imageData.data[idx + 1] = Math.max(0, color-128);
+                    imageData.data[idx + 2] = 0;
                 }
                 imageData.data[idx + 3] = 255; // Alpha channel
             }
