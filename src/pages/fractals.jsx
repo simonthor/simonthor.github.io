@@ -4,8 +4,18 @@ export default function Fractals() {
     const canvasRef = useRef(null);
     const [loading, setLoading] = useState(true);
     const [uploadedImage, setUploadedImage] = useState(null);
+    
+    // Add state for managing view position
+    const [viewPosition, setViewPosition] = useState({
+        xMin: -2, xMax: 1,
+        yMin: -1.5, yMax: 1.5
+    });
+    // Track mouse state for panning
+    const [isPanning, setIsPanning] = useState(false);
+    const [startPanPosition, setStartPanPosition] = useState({ x: 0, y: 0 });
 
-    useEffect(() => {
+    // Function to render the fractal with current view position
+    const renderFractal = () => {
         const canvas = canvasRef.current;
         if (!canvas) return;
 
@@ -17,8 +27,7 @@ export default function Fractals() {
 
         // Mandelbrot parameters
         const maxIterations = 100;
-        const xMin = -2, xMax = 1;
-        const yMin = -1.5, yMax = 1.5;
+        const { xMin, xMax, yMin, yMax } = viewPosition;
 
         setLoading(true);
         
@@ -64,7 +73,12 @@ export default function Fractals() {
 
         ctx.putImageData(imageData, 0, 0);
         setLoading(false);
-    }, []);
+    };
+
+    // Initial render
+    useEffect(() => {
+        renderFractal();
+    }, [viewPosition]);
 
     const handleImageUpload = (event) => {
         const file = event.target.files[0];
@@ -77,20 +91,63 @@ export default function Fractals() {
         }
     };
 
+    // Handle mouse events for panning
+    const handleMouseDown = (e) => {
+        setIsPanning(true);
+        setStartPanPosition({ x: e.clientX, y: e.clientY });
+    };
+
+    const handleMouseMove = (e) => {
+        if (!isPanning) return;
+        
+        const canvas = canvasRef.current;
+        if (!canvas) return;
+        
+        const width = canvas.width;
+        const height = canvas.height;
+        
+        const dx = e.clientX - startPanPosition.x;
+        const dy = e.clientY - startPanPosition.y;
+        
+        // Calculate how much to move in the complex plane
+        const rangeX = viewPosition.xMax - viewPosition.xMin;
+        const rangeY = viewPosition.yMax - viewPosition.yMin;
+        
+        const moveX = (dx / width) * rangeX;
+        const moveY = (dy / height) * rangeY;
+        
+        // Update view position (move opposite to mouse direction)
+        setViewPosition({
+            xMin: viewPosition.xMin - moveX,
+            xMax: viewPosition.xMax - moveX,
+            yMin: viewPosition.yMin - moveY,
+            yMax: viewPosition.yMax - moveY
+        });
+        
+        // Update start position for next move
+        setStartPanPosition({ x: e.clientX, y: e.clientY });
+    };
+
+    const handleMouseUp = () => {
+        setIsPanning(false);
+    };
+
+    const handleMouseLeave = () => {
+        setIsPanning(false);
+    };
+
     return (
         <div className="fractal-container">
-            <div className="upload-section" style={{ marginBottom: '20px', textAlign: 'left' }}>
-                <input
-                    type="file"
-                    accept="image/*"
-                    onChange={handleImageUpload}
-                    style={{ marginBottom: '10px' }}
-                />
-            </div>
-            
             <div style={{ display: 'flex', justifyContent: 'space-between' }}>
                 <div className="image-section" style={{ flex: 1, marginRight: '20px', textAlign: 'right' }}>
                     <h2>Your Image</h2>
+                    <div className="upload-section" style={{ marginBottom: '20px', textAlign: 'left' }}>
+                        <input
+                            type="file"
+                            accept="image/*"
+                            onChange={handleImageUpload}
+                        />
+                    </div>
                     {uploadedImage ? (
                         <img 
                             src={uploadedImage} 
@@ -106,11 +163,18 @@ export default function Fractals() {
                 
                 <div className="fractal-section" style={{ flex: 1 }}>
                     <h2>Mandelbrot Set</h2>
+                    <p>Click and drag to pan</p>
                     {loading && <p>Generating fractal...</p>}
+                    <p>Showing {viewPosition.xMin} + {viewPosition.yMin}i to {viewPosition.xMax} + {viewPosition.yMax}i</p>
                     <canvas 
                         ref={canvasRef} 
                         width={500} 
-                        height={500} 
+                        height={500}
+                        onMouseDown={handleMouseDown}
+                        onMouseMove={handleMouseMove}
+                        onMouseUp={handleMouseUp}
+                        onMouseLeave={handleMouseLeave}
+                        style={{ cursor: isPanning ? 'grabbing' : 'grab' }}
                     />
                 </div>
             </div>
