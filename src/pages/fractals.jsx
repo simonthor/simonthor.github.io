@@ -136,6 +136,42 @@ export default function Fractals() {
         setIsPanning(false);
     };
 
+    // Handle mouse wheel for zooming
+    const handleWheel = (e) => {
+        e.preventDefault();
+        
+        const canvas = canvasRef.current;
+        if (!canvas) return;
+        
+        // Get mouse position relative to canvas
+        const rect = canvas.getBoundingClientRect();
+        const mouseX = e.clientX - rect.left;
+        const mouseY = e.clientY - rect.top;
+        
+        // Map mouse position to complex plane
+        const width = canvas.width;
+        const height = canvas.height;
+        const zoomPoint = {
+            x: viewPosition.xMin + (mouseX / width) * (viewPosition.xMax - viewPosition.xMin),
+            y: viewPosition.yMin + (mouseY / height) * (viewPosition.yMax - viewPosition.yMin)
+        };
+        
+        // Zoom factor (adjust as needed)
+        const zoomFactor = e.deltaY > 0 ? 1.2 : 0.8;
+        
+        // Calculate new ranges
+        const newRangeX = (viewPosition.xMax - viewPosition.xMin) * zoomFactor;
+        const newRangeY = (viewPosition.yMax - viewPosition.yMin) * zoomFactor;
+        
+        // Calculate new boundaries while keeping the mouse position fixed
+        setViewPosition({
+            xMin: zoomPoint.x - (mouseX / width) * newRangeX,
+            xMax: zoomPoint.x + (1 - mouseX / width) * newRangeX,
+            yMin: zoomPoint.y - (mouseY / height) * newRangeY,
+            yMax: zoomPoint.y + (1 - mouseY / height) * newRangeY
+        });
+    };
+
     return (
         <div className="fractal-container">
             <div style={{ display: 'flex', justifyContent: 'space-between' }}>
@@ -163,9 +199,9 @@ export default function Fractals() {
                 
                 <div className="fractal-section" style={{ flex: 1 }}>
                     <h2>Mandelbrot Set</h2>
-                    <p>Click and drag to pan</p>
+                    <p>Click and drag to pan, scroll to zoom</p>
                     {loading && <p>Generating fractal...</p>}
-                    <p>Showing {viewPosition.xMin} + {viewPosition.yMin}i to {viewPosition.xMax} + {viewPosition.yMax}i</p>
+                    <p>Showing {viewPosition.xMin.toPrecision(4)} + {viewPosition.yMin.toPrecision(4)}i to {viewPosition.xMax.toPrecision(4)} + {viewPosition.yMax.toPrecision(4)}i</p>
                     <canvas 
                         ref={canvasRef} 
                         width={500} 
@@ -174,6 +210,7 @@ export default function Fractals() {
                         onMouseMove={handleMouseMove}
                         onMouseUp={handleMouseUp}
                         onMouseLeave={handleMouseLeave}
+                        onWheel={handleWheel}
                         style={{ cursor: isPanning ? 'grabbing' : 'grab' }}
                     />
                 </div>
