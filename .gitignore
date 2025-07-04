@@ -33,3 +33,6 @@ yarn-error.log*
 # Other
 /.unused
 planet-design.pptx
+
+# Vite
+.vite
