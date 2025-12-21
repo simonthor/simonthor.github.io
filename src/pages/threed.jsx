@@ -13,26 +13,16 @@ const ThreeD = ({
     const [isLoading, setIsLoading] = useState(true);
 
     useEffect(() => {
-        if (!mountRef.current) return;
-
-        // const geometry = new THREE.BoxGeometry(1, 1, 1);
-        // const material = new THREE.MeshStandardMaterial({ color: 0x00ff00 });
-        // const cube = new THREE.Mesh(geometry, material);
-
-        // const geometry2 = new THREE.BoxGeometry(1, 1, 1);
-        // const material2 = new THREE.MeshStandardMaterial({ color: 0x0000ff });
-        // const cube2 = new THREE.Mesh(geometry2, material2);
-
-        // setModels([cube, cube2]);
+        if (!mountRef.current) return
 
         const loader = new GLTFLoader();
         const modelPromises = [];
 
         const promise1 = new Promise((resolve) => {
-            loader.load( '/3dmodels/stick/scene.glb', ( gltf ) => {
+            loader.load( '/3dmodels/stick/stick2.glb', ( gltf ) => {
                 const root = gltf.scene;
                 root.updateMatrixWorld();
-                root.position.y = 1; // Adjust as needed
+                root.position.set(1, 1, 0); // Adjust as needed
                 root.rotation.set(0, 0, 0); // Reset rotation
                 resolve(root);
             },
@@ -45,10 +35,10 @@ const ThreeD = ({
         modelPromises.push(promise1);
 
         const promise2 = new Promise((resolve) => {
-            loader.load( '/3dmodels/stick/scene.glb', ( gltf ) => {
+            loader.load( '/3dmodels/stick/stick1.glb', ( gltf ) => {
                 const root = gltf.scene;
                 root.updateMatrixWorld();
-                root.position.y = 1; // Adjust as needed
+                root.position.set(-1, 1, 0); // Adjust as needed
                 root.rotation.set(0, 0, 0); // Reset rotation
                 resolve(root);
             },
@@ -69,7 +59,6 @@ const ThreeD = ({
 
     useEffect(() => {
         if (!mountRef.current || isLoading || models.length === 0) return;
-        console.log(models);
 
         // Scene setup
         const scene = new THREE.Scene();
@@ -126,6 +115,7 @@ const ThreeD = ({
         const rotationSensitivity = 10; // The higher the faster the rotation
         let originalY;
         let originalX;
+        // let originalIntersection;
 
         // Raycasting function
         const getIntersection = () => {
@@ -156,6 +146,15 @@ const ThreeD = ({
         dragControls.addEventListener('dragstart', (event) => {
             orbitControls.enabled = false;
             originalY = event.object.position.y;
+            if (isRightClick) {
+                originalX = mouse.x;
+                return;
+            }
+
+            // const intersection = getIntersection();
+            // if (intersection) {
+            //     originalIntersection = intersection;
+            // }
         });
 
 
@@ -189,6 +188,9 @@ const ThreeD = ({
 
             const intersection = getIntersection();
             if (intersection) {
+                // console.log(intersection.sub(originalIntersection));
+                // event.object.position.copy(event.object.position + intersection.sub(originalIntersection) / 100.);
+                // originalIntersection.copy(intersection);
                 event.object.position.copy(intersection);
             }
         });
