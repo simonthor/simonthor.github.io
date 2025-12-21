@@ -4,14 +4,14 @@ import styled from 'styled-components';
 export default class Page extends React.Component {
     constructor(props) {
         super(props);
-        this.content = React.lazy(() => import(`../pages/${props.src}`));
+        this.content = React.lazy(() => import(`/src/pages/${props.src}`));
 
         this.background = styled.div`
             flex: 1;
             background-image: linear-gradient(#000115, #1f1844, lightblue);
             max-width: 100%;
             min-height: 100%;
-            padding-right: 1rem; padding-left: 1rem;
+            padding-right: 2rem; padding-left: 2rem;
             
             /*
              * The CSS below is a modified version of the Slate theme.
