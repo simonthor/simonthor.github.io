@@ -123,29 +123,27 @@ const ThreeD = ({
 
         // Create drag controls for the objects
         const dragControls = new DragControls(models, camera, renderer.domElement);
-        const rotationSensitivity = 2; // The higher the faster the rotation
-        // Store original Y position
+        const rotationSensitivity = 10; // The higher the faster the rotation
         let originalY;
         let originalX;
 
         // Raycasting function
-        function getIntersection() {
-            // Raycast from camera through mouse position
+        const getIntersection = () => {
             raycaster.setFromCamera(mouse, camera);
             let intersection = new THREE.Vector3();
             raycaster.ray.intersectPlane(plane, intersection);
             return intersection ? new THREE.Vector3(intersection.x, originalY, intersection.z) : null;
-        }
-        
+        };
+
         // Update mouse position on mousemove
         window.addEventListener('mousemove', (event) => {
             mouse.x = (event.clientX / window.innerWidth) * 2 - 1;
             mouse.y = -(event.clientY / window.innerHeight) * 2 + 1;
         });
 
-        // Update mouse position on mousemove
+        // Track right-click
         window.addEventListener('mousedown', (event) => {
-            isRightClick = event.button == 2;
+            isRightClick = event.button === 2;
         });
 
         window.addEventListener('mouseup', () => {
@@ -160,6 +158,20 @@ const ThreeD = ({
             originalY = event.object.position.y;
         });
 
+
+        // Rotate an object around an arbitrary axis in world space       
+        const rotateAroundWorldAxis = (object, axis, radians) => {
+            const rotWorldMatrix = new THREE.Matrix4();
+            rotWorldMatrix.makeRotationAxis(axis.normalize(), radians);
+            
+            // pre-multiply
+            rotWorldMatrix.multiply(object.matrix); 
+
+            object.matrix = rotWorldMatrix;
+
+            object.rotation.setFromRotationMatrix(object.matrix);
+        }
+
         dragControls.addEventListener('drag', (event) => {
             if (!event.object) return;
 
@@ -168,8 +180,9 @@ const ThreeD = ({
                     originalX = mouse.x;
                     return;
                 }
-                // event.object.rotation.y += event.object.userData.lastMouseX - mouse.x
-                event.object.rotation.set(0, event.object.rotation.y + (mouse.x - originalX)*rotationSensitivity, 0);
+                
+                rotateAroundWorldAxis(event.object, new THREE.Vector3(0, 1, 0), (mouse.x - originalX)*rotationSensitivity);
+
                 originalX = mouse.x;
                 return;
             }
