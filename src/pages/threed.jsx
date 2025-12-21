@@ -2,15 +2,74 @@ import React, { useEffect, useRef, useState } from 'react';
 import * as THREE from 'three';
 import { OrbitControls } from 'three/addons/controls/OrbitControls';
 import { DragControls } from 'three/addons/controls/DragControls.js';
+import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
 
 const ThreeD = ({ 
     width = '100%', 
     height = '1000px' 
 }) => {
     const mountRef = useRef(null);
+    const [models, setModels] = useState([]);
+    const [isLoading, setIsLoading] = useState(true);
 
     useEffect(() => {
         if (!mountRef.current) return;
+
+        // const geometry = new THREE.BoxGeometry(1, 1, 1);
+        // const material = new THREE.MeshStandardMaterial({ color: 0x00ff00 });
+        // const cube = new THREE.Mesh(geometry, material);
+
+        // const geometry2 = new THREE.BoxGeometry(1, 1, 1);
+        // const material2 = new THREE.MeshStandardMaterial({ color: 0x0000ff });
+        // const cube2 = new THREE.Mesh(geometry2, material2);
+
+        // setModels([cube, cube2]);
+
+        const loader = new GLTFLoader();
+        const modelPromises = [];
+
+        const promise1 = new Promise((resolve) => {
+            loader.load( '/3dmodels/stick/scene.glb', ( gltf ) => {
+                const root = gltf.scene;
+                root.updateMatrixWorld();
+                root.position.y = 1; // Adjust as needed
+                root.rotation.set(0, 0, 0); // Reset rotation
+                resolve(root);
+            },
+            undefined, // No progress callback
+            (error) => {
+                console.error('Error loading glTF model:', error);
+                resolve(null);
+            });
+        });
+        modelPromises.push(promise1);
+
+        const promise2 = new Promise((resolve) => {
+            loader.load( '/3dmodels/stick/scene.glb', ( gltf ) => {
+                const root = gltf.scene;
+                root.updateMatrixWorld();
+                root.position.y = 1; // Adjust as needed
+                root.rotation.set(0, 0, 0); // Reset rotation
+                resolve(root);
+            },
+            undefined, // No progress callback
+            (error) => {
+                console.error('Error loading glTF model:', error);
+                resolve(null);
+            });
+        });
+        modelPromises.push(promise2);
+
+        Promise.all(modelPromises).then((loadedModels) => {
+            const validModels = loadedModels.filter(model => model !== null);
+            setModels(validModels);
+            setIsLoading(false);
+        });
+    }, []);
+
+    useEffect(() => {
+        if (!mountRef.current || isLoading || models.length === 0) return;
+        console.log(models);
 
         // Scene setup
         const scene = new THREE.Scene();
@@ -46,15 +105,24 @@ const ThreeD = ({
         directionalLight.position.set(1, 1, 1).normalize();
         scene.add(directionalLight);
 
-        // Add a simple cube to the scene
-        const geometry = new THREE.BoxGeometry(1, 1, 1);
-        const material = new THREE.MeshStandardMaterial({ color: 0x00ff00 });
-        const cube = new THREE.Mesh(geometry, material);
-        scene.add(cube);
+        models.forEach(model => scene.add(model));  // <-- Add loaded models to scene
 
-        // Create drag controls for the cube
-        const objects = [cube];
-        const dragControls = new DragControls(objects, camera, renderer.domElement);
+        // Grid helper
+        const gridHelper = new THREE.GridHelper(10, 10);
+        scene.add(gridHelper);
+        
+        // Show the 3 axes using arrows with labels x, y, z
+        const axesHelper = new THREE.AxesHelper(10);
+        scene.add(axesHelper);
+
+        // Add a simple cube to the scene
+        // const geometry = new THREE.BoxGeometry(1, 1, 1);
+        // const material = new THREE.MeshStandardMaterial({ color: 0x00ff00 });
+        // const cube = new THREE.Mesh(geometry, material);
+        // scene.add(cube);
+
+        // Create drag controls for the objects
+        const dragControls = new DragControls(models, camera, renderer.domElement);
         const rotationSensitivity = 2; // The higher the faster the rotation
         // Store original Y position
         let originalY;
@@ -82,6 +150,8 @@ const ThreeD = ({
 
         window.addEventListener('mouseup', () => {
             isRightClick = false;
+            originalX = undefined;
+            originalY = undefined;
         });
 
         // Restrict movement to X and Z plane
@@ -114,10 +184,6 @@ const ThreeD = ({
             orbitControls.enabled = true;
         });
 
-        // Grid helper
-        const gridHelper = new THREE.GridHelper(10, 10);
-        scene.add(gridHelper);
-
         // Animation loop
         const animate = () => {
             requestAnimationFrame(animate);
@@ -141,13 +207,28 @@ const ThreeD = ({
         // Cleanup
         return () => {
             window.removeEventListener('resize', handleResize);
-            dragControls.dispose();
+            window.removeEventListener('mousedown', () => {});
+            window.removeEventListener('mouseup', () => {});
+            if (dragControls) dragControls.dispose();
             if (mountRef.current) {
                 mountRef.current.removeChild(renderer.domElement);
             }
-            scene.dispose();
+            // Dispose of GPU resources
+            scene.traverse((object) => {
+                if (object.isMesh) {
+                if (object.geometry) object.geometry.dispose();
+                if (object.material) {
+                    if (Array.isArray(object.material)) {
+                    object.material.forEach((material) => material.dispose());
+                    } else {
+                    object.material.dispose();//
+                    }
+                }
+                }
+            });
         };
-    }, []);
+
+    }, [isLoading, models]);
 
     return <div ref={mountRef} style={{ width, height }} />;
 };
