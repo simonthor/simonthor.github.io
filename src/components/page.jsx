@@ -4,7 +4,7 @@ import styled from 'styled-components';
 export default class Page extends React.Component {
     constructor(props) {
         super(props);
-        this.content = React.lazy(() => import(`/src/pages/${props.src}`));
+        this.content = React.lazy(() => import(`../../src/pages/${props.src}`));
 
         this.background = styled.div`
             flex: 1;
