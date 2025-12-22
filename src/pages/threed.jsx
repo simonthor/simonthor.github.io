@@ -54,7 +54,7 @@ const ThreeD = ({
             const geometry = new THREE.BoxGeometry(1, 1, 1);
             const material = new THREE.MeshStandardMaterial({ color: 0x00ff00 });
             const cube = new THREE.Mesh(geometry, material);
-            cube.position.set(0, 0, 0); // Adjust as needed
+            cube.position.set(0, 0.5, 0); // Adjust as needed
             resolve(cube);
         });
         modelPromises.push(promise3);
