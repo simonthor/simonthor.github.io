@@ -33,7 +33,7 @@ const ThreeD = ({
             });
         });
         modelPromises.push(promise1);
-
+        
         const promise2 = new Promise((resolve) => {
             loader.load( '/3dmodels/stick/stick1.glb', ( gltf ) => {
                 const root = gltf.scene;
@@ -49,6 +49,15 @@ const ThreeD = ({
             });
         });
         modelPromises.push(promise2);
+
+        const promise3 = new Promise((resolve) => {
+            const geometry = new THREE.BoxGeometry(1, 1, 1);
+            const material = new THREE.MeshStandardMaterial({ color: 0x00ff00 });
+            const cube = new THREE.Mesh(geometry, material);
+            cube.position.set(0, 0, 0); // Adjust as needed
+            resolve(cube);
+        });
+        modelPromises.push(promise3);
 
         Promise.all(modelPromises).then((loadedModels) => {
             const validModels = loadedModels.filter(model => model !== null);
@@ -74,7 +83,7 @@ const ThreeD = ({
             0.1, 
             1000
         );
-        camera.position.z = 5;
+        camera.position.set(3, 3, 3);
 
         // Renderer setup
         const renderer = new THREE.WebGLRenderer({ antialias: true });
@@ -104,18 +113,12 @@ const ThreeD = ({
         const axesHelper = new THREE.AxesHelper(10);
         scene.add(axesHelper);
 
-        // Add a simple cube to the scene
-        // const geometry = new THREE.BoxGeometry(1, 1, 1);
-        // const material = new THREE.MeshStandardMaterial({ color: 0x00ff00 });
-        // const cube = new THREE.Mesh(geometry, material);
-        // scene.add(cube);
-
         // Create drag controls for the objects
         const dragControls = new DragControls(models, camera, renderer.domElement);
         const rotationSensitivity = 10; // The higher the faster the rotation
         let originalY;
         let originalX;
-        // let originalIntersection;
+        let dragOffset = new THREE.Vector3();
 
         // Raycasting function
         const getIntersection = () => {
@@ -150,11 +153,11 @@ const ThreeD = ({
                 originalX = mouse.x;
                 return;
             }
-
-            // const intersection = getIntersection();
-            // if (intersection) {
-            //     originalIntersection = intersection;
-            // }
+            // Calculate the offset
+            const intersection = getIntersection();
+            if (intersection) {
+                dragOffset.copy(intersection).sub(event.object.position);
+            }
         });
 
 
@@ -188,15 +191,13 @@ const ThreeD = ({
 
             const intersection = getIntersection();
             if (intersection) {
-                // console.log(intersection.sub(originalIntersection));
-                // event.object.position.copy(event.object.position + intersection.sub(originalIntersection) / 100.);
-                // originalIntersection.copy(intersection);
-                event.object.position.copy(intersection);
+                event.object.position.copy(intersection).sub(dragOffset);
             }
         });
 
         dragControls.addEventListener('dragend', () => {
             orbitControls.enabled = true;
+            dragOffset.set(0, 0, 0);
         });
 
         // Animation loop
