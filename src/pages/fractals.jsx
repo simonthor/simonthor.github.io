@@ -3,16 +3,24 @@ import { useState, useEffect, useRef } from 'react';
 export default function Fractals() {
     const canvasRef = useRef(null);
     const [loading, setLoading] = useState(true);
-    const [uploadedImage, setUploadedImage] = useState(null);
     
+    const [shade, setShade] = useState('#62A0EA');
+    const [maxIterations, setMaxIterations] = useState(32);
+    const [resolution, setResolution] = useState(500);
     // Add state for managing view position
     const [viewPosition, setViewPosition] = useState({
         xMin: -2, xMax: 1,
         yMin: -1.5, yMax: 1.5
     });
+
     // Track mouse state for panning
     const [isPanning, setIsPanning] = useState(false);
     const [startPanPosition, setStartPanPosition] = useState({ x: 0, y: 0 });
+    
+    const [customRealFunction, setCustomRealFunction] = useState('z.real*z.real - z.imag*z.imag + c.real');
+    const [functionError, setFunctionError] = useState('');
+    
+    const [customImagFunction, setCustomImagFunction] = useState('Math.abs(2*z.real*z.imag) + c.imag');
 
     // Function to render the fractal with current view position
     const renderFractal = () => {
@@ -25,8 +33,7 @@ export default function Fractals() {
         
         const imageData = ctx.createImageData(width, height);
 
-        // Mandelbrot parameters
-        const maxIterations = 100;
+        // Fractal parameters
         const { xMin, xMax, yMin, yMax } = viewPosition;
 
         setLoading(true);
@@ -37,6 +44,15 @@ export default function Fractals() {
             imag: yMin + (y / height) * (yMax - yMin)
         });
 
+        let fn = new Function();
+        try {
+            fn = new Function('z', 'c', `return {real: ${customRealFunction}, imag: ${customImagFunction}};`);
+            // Try evaluating the function with dummy values to catch syntax errors early
+            fn({ real: 0, imag: 0 }, { real: 0, imag: 0 });
+        } catch (err) {
+            setFunctionError(`Invalid function: ${err.message}`);
+            return;
+        }
         // Compute the Mandelbrot set
         for (let y = 0; y < height; y++) {
             for (let x = 0; x < width; x++) {
@@ -51,10 +67,11 @@ export default function Fractals() {
                     // const imag = 2 * z.real * z.imag + c.imag;
                     // Burning Ship:
                     // z = |Re(z)|^2 - |Im(z)|^2 + c
-                    const real = z.real*z.real - z.imag*z.imag + c.real;
-                    const imag = Math.abs(2*z.real*z.imag) + c.imag;
-                    z.real = real;
-                    z.imag = imag;
+                    // In the while loop, replace the Mandelbrot/Burning Ship calculation with:
+
+                    const result = fn(z, c);
+                    z.real = result.real;
+                    z.imag = result.imag;
                     iter++;
                 }
 
@@ -66,11 +83,16 @@ export default function Fractals() {
                     imageData.data[idx + 1] = 0;
                     imageData.data[idx + 2] = 0;
                 } else {
+                    // TODO allow different color maps, currently just a gradient from black to red based on iterations
                     // Points outside are colored based on iteration count
-                    const color = iter / maxIterations * 255;
-                    imageData.data[idx] = color;
-                    imageData.data[idx + 1] = Math.max(0, color-128);
-                    imageData.data[idx + 2] = 0;
+                    const color = iter / maxIterations;
+                    // Convert the hex color to RGB and apply the iteration-based intensity
+                    const r = parseInt(color * (parseInt(shade.slice(1, 3), 16)));
+                    const g = parseInt(color * (parseInt(shade.slice(3, 5), 16)));
+                    const b = parseInt(color * (parseInt(shade.slice(5, 7), 16)));
+                    imageData.data[idx] = r;
+                    imageData.data[idx + 1] = g;
+                    imageData.data[idx + 2] = b;
                 }
                 imageData.data[idx + 3] = 255; // Alpha channel
             }
@@ -83,18 +105,8 @@ export default function Fractals() {
     // Initial render
     useEffect(() => {
         renderFractal();
-    }, [viewPosition]);
+    }, [viewPosition, maxIterations, resolution, customRealFunction, customImagFunction, shade]);
 
-    const handleImageUpload = (event) => {
-        const file = event.target.files[0];
-        if (file) {
-            const reader = new FileReader();
-            reader.onload = (e) => {
-                setUploadedImage(e.target.result);
-            };
-            reader.readAsDataURL(file);
-        }
-    };
 
     // Handle mouse events for panning
     const handleMouseDown = (e) => {
@@ -179,38 +191,74 @@ export default function Fractals() {
 
     return (
         <div className="fractal-container">
+            <h1>Fractal explorer</h1>
             <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-                <div className="image-section" style={{ flex: 1, marginRight: '20px', textAlign: 'right' }}>
-                    <h2>Your Image</h2>
-                    <div className="upload-section" style={{ marginBottom: '20px', textAlign: 'left' }}>
-                        <input
-                            type="file"
-                            accept="image/*"
-                            onChange={handleImageUpload}
+                <div className="fractal-controls" style={{ flex: '0 0 40%', marginRight: '20px', fontSize: '1.5em' }}>
+                    <h2>Controls</h2>
+                    <label htmlFor="resolution">Resolution: {resolution}x{resolution}</label><br/>
+                    <input type="range" id="resolution" name="resolution" min="100" max="1000" step="10" style={{width: "100%"}} defaultValue="500" onChange={(e) => setResolution(parseInt(e.target.value))}/>
+                    <br/>
+                    <label htmlFor="iterations">Number of colors: {maxIterations}</label><br/>
+                    <input type="range" id="iterations" name="iterations" min="1" max="256" style={{width: "100%"}} defaultValue="32" onChange={(e) => setMaxIterations(parseInt(e.target.value))}/>
+                    <br/>
+                    <label htmlFor="customRealFunction">z<sub>i+1</sub>= </label>
+                    <input 
+                        type="text" 
+                        id="customRealFunction" 
+                        value={customRealFunction}
+                        onChange={(e) => {
+                            setCustomRealFunction(e.target.value);
+                            setFunctionError('');
+                        }}
+                        placeholder="e.g., z.real*z.real - z.imag*z.imag + c.real"
+                        style={{ width: '40%', marginBottom: '10px', fontSize: '1em' }}
+                    />
+                    <label htmlFor="customImagFunction"> + i</label>
+                    <input 
+                        type="text" 
+                        id="customImagFunction" 
+                        value={customImagFunction}
+                        onChange={(e) => {
+                            setCustomImagFunction(e.target.value);
+                            setFunctionError('');
+                        }}
+                        placeholder="e.g., Math.abs(2*z.real*z.imag) + c.imag"
+                        style={{ width: '40%', marginBottom: '10px', fontSize: '1em' }}
                         />
-                    </div>
-                    {uploadedImage ? (
-                        <img 
-                            src={uploadedImage} 
-                            alt="Uploaded content" 
-                            style={{ maxWidth: '100%', maxHeight: '500px' }}
-                        />
-                    ) : (
-                        <div style={{ width: '100%', height: '500px', backgroundColor: '#f0f0f0', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                            <p>No image uploaded</p>
-                        </div>
-                    )}
+                    <br/>
+                    {functionError && <p style={{ color: 'red' }}>{functionError}</p>}
+                    <label htmlFor="color">Color:</label>
+                    <input type="color" id="color" name="color" value={shade} onChange={(e) => {setShade(e.target.value);}}/>
+                    <p>Click and drag to pan, scroll to zoom</p>
+                    {(() => {
+                        const rangeX = viewPosition.xMax - viewPosition.xMin;
+                        const rangeY = viewPosition.yMax - viewPosition.yMin;
+                        const calcPrecision = (range) => {
+                            // base of 4 significant digits (first non-zero + 3 digits), increase when zoomed in
+                            const safeRange = Math.abs(range) > 0 ? Math.abs(range) : 1;
+                            return Math.max(4, Math.ceil(-Math.log10(safeRange)) + 1);
+                        };
+                        const format = (v, range) => {
+                            const p = calcPrecision(range);
+                            try { return Number(v).toPrecision(p); } catch { return String(v); }
+                        };
+                        return (
+                            <p>
+                                Showing {format(viewPosition.xMin, rangeX)} + {format(viewPosition.yMin, rangeY)}i
+                                {' '}to{' '}
+                                {format(viewPosition.xMax, rangeX)} + {format(viewPosition.yMax, rangeY)}i
+                            </p>
+                        );
+                    })()}
                 </div>
                 
                 <div className="fractal-section" style={{ flex: 1 }}>
-                    <h2>Mandelbrot Set</h2>
-                    <p>Click and drag to pan, scroll to zoom</p>
+                    <h2>Viewer</h2>
                     {loading && <p>Generating fractal...</p>}
-                    <p>Showing {viewPosition.xMin.toPrecision(4)} + {viewPosition.yMin.toPrecision(4)}i to {viewPosition.xMax.toPrecision(4)} + {viewPosition.yMax.toPrecision(4)}i</p>
                     <canvas 
                         ref={canvasRef} 
-                        width={500} 
-                        height={500}
+                        width={resolution} 
+                        height={resolution}
                         onMouseDown={handleMouseDown}
                         onMouseMove={handleMouseMove}
                         onMouseUp={handleMouseUp}
