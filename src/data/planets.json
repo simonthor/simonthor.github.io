@@ -28,8 +28,8 @@
         "image": "jupiter"
     },
     {
-        "text": "3D viewer",
-        "href": "/threed",
+        "text": "Fractal explorer",
+        "href": "/fractals",
         "radius": 90,
         "height": 4.5,
         "width-rel": 2.08,

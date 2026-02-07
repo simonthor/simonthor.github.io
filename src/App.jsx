@@ -11,9 +11,6 @@ import SolarSystem from './pages/solar-system';
 import Header from './header';
 import Footer from './footer';
 import Page from './components/page';
-// While Test can be rendered using Page, it should not depend on bugs in Page itself.
-// Hence its standalone import
-import Test from './test';
 
 
 export default class App extends React.Component {
@@ -26,7 +23,7 @@ export default class App extends React.Component {
             {path: '/tips', image: 'jupiter'},
             {path: '/programming', image: 'earth'},
             {path: '/research', image: 'mars'},
-            {path: '/threed', image: 'saturn'}
+            {path: '/fractals', image: 'saturn'}
         ];
     }
 
@@ -45,9 +42,6 @@ export default class App extends React.Component {
                                 </Route>
                             )
                         )}
-                        <Route path='/test'>
-                            <Test/>
-                        </Route>
                         <Route exact path='/'>
                             <SolarSystem/>
                         </Route>
