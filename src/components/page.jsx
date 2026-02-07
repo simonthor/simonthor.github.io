@@ -199,15 +199,9 @@ export default class Page extends React.Component {
             }
         `;
 
-        this.planet = styled.div`
-            background-image: url('/images/${props.image}_surface.svg');
-            position: relative;
-            bottom: 0;
-            height: 10rem;
-            width: 100%;
-            background-size: cover;
-            background-repeat: no-repeat;
-        `;
+        // this.planet = styled.div`
+        //    position: absolute;
+        // `;
     }
 
     render() {
@@ -219,7 +213,7 @@ export default class Page extends React.Component {
                 </React.Suspense>
                 {/*This removes black bar at bottom of page*/}
                 <span style={{height:'1rem', display:'block'}}/>
-                {<this.planet/>}
+                {/* {<this.planet/>} */}
             </this.background>
         );
     }

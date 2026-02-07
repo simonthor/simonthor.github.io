@@ -17,10 +17,10 @@ export default function Fractals() {
     const [isPanning, setIsPanning] = useState(false);
     const [startPanPosition, setStartPanPosition] = useState({ x: 0, y: 0 });
     
-    const [customRealFunction, setCustomRealFunction] = useState('z.real*z.real - z.imag*z.imag + c.real');
+    const [customRealFunction, setCustomRealFunction] = useState('zr*zr - zi*zi + cr');
     const [functionError, setFunctionError] = useState('');
     
-    const [customImagFunction, setCustomImagFunction] = useState('Math.abs(2*z.real*z.imag) + c.imag');
+    const [customImagFunction, setCustomImagFunction] = useState('abs(2*zr*zi) + ci');
 
     // Function to render the fractal with current view position
     const renderFractal = () => {
@@ -35,23 +35,6 @@ export default function Fractals() {
 
         setLoading(true);
         
-        // Function to map pixel coordinates to complex plane
-        const mapToComplex = (x, y) => ({
-            real: xMin + (x / width) * (xMax - xMin),
-            imag: yMin + (y / height) * (yMax - yMin)
-        });
-        
-
-        let fn = new Function();
-        try {
-            fn = new Function('z', 'c', `return {real: ${customRealFunction}, imag: ${customImagFunction}};`);
-            // Try evaluating the function with dummy values to catch syntax errors early
-            fn({ real: 0, imag: 0 }, { real: 0, imag: 0 });
-        } catch (err) {
-            setFunctionError(`Invalid function: ${err.message}`);
-            return;
-        }
-        
         // Try to use WebGL for acceleration
         const gl = canvas.getContext('webgl') || canvas.getContext('experimental-webgl');
         const hexToRGB = (h) => {
@@ -60,118 +43,112 @@ export default function Fractals() {
             const b = parseInt(h.slice(5,7),16)/255;
             return [r,g,b];
         };
-        console.log(gl);
-        if (gl) {
-            console.log('Using WebGL for fractal rendering');
-            // Basic passthrough vertex shader
-            const vsSource = `
-            attribute vec2 a_position;
-            varying vec2 v_uv;
-            void main() {
-                // map from [-1,1] -> [0,1], then flip Y to match canvas coord system
-                v_uv = vec2(a_position.x * 0.5 + 0.5, 1.0 - (a_position.y * 0.5 + 0.5));
-                gl_Position = vec4(a_position, 0.0, 1.0);
-            }
-            `;
 
-            // Convert JS user expressions to GLSL-ish expressions
-            const toGLSL = (expr) => {
+        if (!gl) {
+            setFunctionError('WebGL not supported :(');
+            return;
+        }
+
+        // Convert JS user expressions to GLSL-ish expressions
+        const toGLSL = (expr) => {
             if (!expr) return '0.0';
-            let s = expr
-                .replace(/Math\./g, '')          // Math.abs -> abs, Math.sin -> sin etc
-                .replace(/z\.real/g, 'zr')
-                .replace(/z\.imag/g, 'zi')
-                .replace(/c\.real/g, 'cr')
-                .replace(/c\.imag/g, 'ci')
-                .replace(/\*\*/g, '^')
-            ;         // fallback, will replace below
-
+            
             // Convert integer literals to float literals (e.g. 2 -> 2.0) so GLSL doesn't try to mix int*float
             // Note: this targets standalone integer tokens and avoids touching things like property names.
-            s = s.replace(/(\b\d+)(?!\.)\b/g, '$1.0');
-
+            let s = expr.replace(/(\b\d+)(?!\.)\b/g, '$1.0');
+            
             // Replace power operator a ^ b with pow(a,b) (simple heuristic)
             s = s.replace(/([0-9A-Za-z_\)\.\]\}]+)\s*\^\s*([0-9A-Za-z_\(\.\[\{]+)/g, 'pow($1,$2)');
+
             return s;
-            };
+        };
+        const realExpr = toGLSL(customRealFunction);
+        const imagExpr = toGLSL(customImagFunction);
 
-            const realExpr = toGLSL(customRealFunction);
-            const imagExpr = toGLSL(customImagFunction);
-            console.log('GLSL real expression:', realExpr);
-            console.log('GLSL imag expression:', imagExpr);
-            // Fragment shader performs iterations in GPU
-            const fsSource = `
-            // Use high precision for better zoom levels
-            precision highp float;
-            varying vec2 v_uv;
-            uniform vec2 u_resolution;
-            uniform float u_xMin;
-            uniform float u_xMax;
-            uniform float u_yMin;
-            uniform float u_yMax;
-            uniform int u_maxIter;
-            uniform vec3 u_color;
+        // Basic passthrough vertex shader
+        const vsSource = `
+        attribute vec2 a_position;
+        varying vec2 v_uv;
+        void main() {
+            // map from [-1,1] -> [0,1], then flip Y to match canvas coord system
+            v_uv = vec2(a_position.x * 0.5 + 0.5, 1.0 - (a_position.y * 0.5 + 0.5));
+            gl_Position = vec4(a_position, 0.0, 1.0);
+        }
+        `;
 
-            // user-provided expressions will use zr, zi, cr, ci
-            float sqr(float x){ return x*x; }
+        // Fragment shader performs iterations in GPU
+        const fsSource = `
+        // Use high precision for better zoom levels
+        precision highp float;
+        varying vec2 v_uv;
+        uniform vec2 u_resolution;
+        uniform float u_xMin;
+        uniform float u_xMax;
+        uniform float u_yMin;
+        uniform float u_yMax;
+        uniform int u_maxIter;
+        uniform vec3 u_color;
 
-            void main() {
-                vec2 frag = v_uv * u_resolution;
-                float x = frag.x;
-                float y = frag.y;
-                float cr = u_xMin + (x / u_resolution.x) * (u_xMax - u_xMin);
-                float ci = u_yMin + (y / u_resolution.y) * (u_yMax - u_yMin);
+        // user-provided expressions will use zr, zi, cr, ci
+        float sqr(float x){ return x*x; }
 
-                float zr = 0.0;
-                float zi = 0.0;
-                int iter = 0;
-                // GLSL requires constant loop bound; set safely above typical max
-                const int MAX_LOOP = 512;
-                for (int i = 0; i < MAX_LOOP; i++) {
-                if (i >= u_maxIter) break;
+        void main() {
+            vec2 frag = v_uv * u_resolution;
+            float x = frag.x;
+            float y = frag.y;
+            float cr = u_xMin + (x / u_resolution.x) * (u_xMax - u_xMin);
+            float ci = u_yMin + (y / u_resolution.y) * (u_yMax - u_yMin);
 
-                // Injected user expressions (must use zr,zi,cr,ci and GLSL functions)
-                float newZr = ${realExpr};
-                float newZi = ${imagExpr};
+            float zr = 0.0;
+            float zi = 0.0;
+            int iter = 0;
+            // GLSL requires constant loop bound; set safely above typical max
+            const int MAX_LOOP = 512;
+            for (int i = 0; i < MAX_LOOP; i++) {
+            if (i >= u_maxIter) break;
 
-                zr = newZr;
-                zi = newZi;
+            // Injected user expressions (must use zr,zi,cr,ci and GLSL functions)
+            float newZr = ${realExpr};
+            float newZi = ${imagExpr};
 
-                if (sqr(zr) + sqr(zi) > 4.0) {
-                    iter = i + 1;
-                    break;
-                }
-                // if we reach the max provided iter without escape, mark as inside
-                if (i == u_maxIter - 1) {
-                    iter = u_maxIter;
-                }
-                }
+            zr = newZr;
+            zi = newZi;
 
-                if (iter == u_maxIter) {
-                gl_FragColor = vec4(0.0, 0.0, 0.0, 1.0);
-                } else {
-                float t = float(iter) / float(u_maxIter);
-                vec3 col = u_color * t;
-                gl_FragColor = vec4(col, 1.0);
-                }
+            if (sqr(zr) + sqr(zi) > 4.0) {
+                iter = i + 1;
+                break;
             }
-            `;
-
-            // Compile helpers
-            const compile = (src, type) => {
-            const sh = gl.createShader(type);
-            gl.shaderSource(sh, src);
-            gl.compileShader(sh);
-            if (!gl.getShaderParameter(sh, gl.COMPILE_STATUS)) {
-                const err = gl.getShaderInfoLog(sh);
-                gl.deleteShader(sh);
-                throw new Error(err);
+            // if we reach the max provided iter without escape, mark as inside
+            if (i == u_maxIter - 1) {
+                iter = u_maxIter;
             }
+            }
+
+            if (iter == u_maxIter) {
+            gl_FragColor = vec4(0.0, 0.0, 0.0, 1.0);
+            } else {
+            float t = float(iter) / float(u_maxIter);
+            vec3 col = u_color * t;
+            gl_FragColor = vec4(col, 1.0);
+            }
+        }
+        `;
+
+        // Compile helpers
+        const compile = (src, type) => {
+        const sh = gl.createShader(type);
+        gl.shaderSource(sh, src);
+        gl.compileShader(sh);
+        if (!gl.getShaderParameter(sh, gl.COMPILE_STATUS)) {
+            const err = gl.getShaderInfoLog(sh);
+            gl.deleteShader(sh);
+            throw new Error(err);
+        }
             return sh;
-            };
+        };
 
-            let program;
-            try {
+        let program;
+        try {
             const vs = compile(vsSource, gl.VERTEX_SHADER);
             const fs = compile(fsSource, gl.FRAGMENT_SHADER);
             program = gl.createProgram();
@@ -181,12 +158,12 @@ export default function Fractals() {
             if (!gl.getProgramParameter(program, gl.LINK_STATUS)) {
                 throw new Error(gl.getProgramInfoLog(program));
             }
-            } catch (err) {
+        } catch (err) {
             // Fallback to CPU renderer on shader compile error
             console.warn('WebGL shader failed, falling back to CPU:', err.message);
-            }
+        }
 
-            if (program) {
+        if (program) {
             gl.viewport(0, 0, width, height);
             gl.clearColor(0,0,0,1);
             gl.clear(gl.COLOR_BUFFER_BIT);
@@ -230,47 +207,7 @@ export default function Fractals() {
             // Done with WebGL rendering - skip 2D putImageData
             setLoading(false);
             return;
-            }
         }
-
-        console.log("Fallback: CPU rendering (original loop)");
-        const ctx = canvas.getContext('2d');
-        
-        const imageData = ctx.createImageData(width, height);
-
-        for (let y = 0; y < height; y++) {
-            for (let x = 0; x < width; x++) {
-            const c = mapToComplex(x, y);
-            let z = { real: 0, imag: 0 };
-            let iter = 0;
-
-            while (z.real * z.real + z.imag * z.imag <= 4 && iter < maxIterations) {
-                const result = fn(z, c);
-                z.real = result.real;
-                z.imag = result.imag;
-                iter++;
-            }
-
-            const idx = (y * width + x) * 4;
-            if (iter === maxIterations) {
-                imageData.data[idx] = 0;
-                imageData.data[idx + 1] = 0;
-                imageData.data[idx + 2] = 0;
-            } else {
-                const color = iter / maxIterations;
-                const r = parseInt(color * (parseInt(shade.slice(1, 3), 16)));
-                const g = parseInt(color * (parseInt(shade.slice(3, 5), 16)));
-                const b = parseInt(color * (parseInt(shade.slice(5, 7), 16)));
-                imageData.data[idx] = r;
-                imageData.data[idx + 1] = g;
-                imageData.data[idx + 2] = b;
-            }
-            imageData.data[idx + 3] = 255;
-            }
-        }
-
-        ctx.putImageData(imageData, 0, 0);
-        setLoading(false);
     };
 
     // Initial render
@@ -381,7 +318,7 @@ export default function Fractals() {
                             setCustomRealFunction(e.target.value);
                             setFunctionError('');
                         }}
-                        placeholder="e.g., z.real*z.real - z.imag*z.imag + c.real"
+                        placeholder="e.g., zr^2 - zi^2 + cr"
                         style={{ width: '40%', marginBottom: '10px', fontSize: '1em' }}
                     />
                     <label htmlFor="customImagFunction"> + i</label>
@@ -393,7 +330,7 @@ export default function Fractals() {
                             setCustomImagFunction(e.target.value);
                             setFunctionError('');
                         }}
-                        placeholder="e.g., Math.abs(2*z.real*z.imag) + c.imag"
+                        placeholder="e.g., abs(2*zr*zi) + ci"
                         style={{ width: '40%', marginBottom: '10px', fontSize: '1em' }}
                         />
                     <br/>
@@ -425,7 +362,8 @@ export default function Fractals() {
                 
                 <div className="fractal-section" style={{ flex: 1 }}>
                     <h2>Viewer</h2>
-                    {loading && <p>Generating fractal...</p>}
+                    {/* If the fractal is not rendering, it is probably because it is written incorrectly */}
+                    {loading && <p>Invalid recusive function. Only zr, zi, cr, ci, GLSL syntax and ^ are allowed</p>}
                     <canvas 
                         ref={canvasRef} 
                         width={resolution} 
