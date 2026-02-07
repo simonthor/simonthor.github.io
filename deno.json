@@ -1,7 +1,7 @@
 {
   "tasks": {
     "dev": "deno run -A --node-modules-dir=auto npm:vite",
-    "build": "deno run -A --node-modules-dir=auto npm:vite build --out-dir docs",
+    "build": "deno run -A --node-modules-dir=auto npm:vite build",
     "server:start": "deno run -A --node-modules-dir --watch ./src/App.jsx",
     "serve": "deno task build && deno task server:start",
     "preview": "deno run -A --node-modules-dir=auto npm:vite preview"
