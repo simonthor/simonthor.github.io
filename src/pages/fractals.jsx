@@ -27,11 +27,8 @@ export default function Fractals() {
         const canvas = canvasRef.current;
         if (!canvas) return;
 
-        const ctx = canvas.getContext('2d');
         const width = canvas.width;
         const height = canvas.height;
-        
-        const imageData = ctx.createImageData(width, height);
 
         // Fractal parameters
         const { xMin, xMax, yMin, yMax } = viewPosition;
@@ -43,6 +40,7 @@ export default function Fractals() {
             real: xMin + (x / width) * (xMax - xMin),
             imag: yMin + (y / height) * (yMax - yMin)
         });
+        
 
         let fn = new Function();
         try {
@@ -53,48 +51,221 @@ export default function Fractals() {
             setFunctionError(`Invalid function: ${err.message}`);
             return;
         }
-        // Compute the Mandelbrot set
+        
+        // Try to use WebGL for acceleration
+        const gl = canvas.getContext('webgl') || canvas.getContext('experimental-webgl');
+        const hexToRGB = (h) => {
+            const r = parseInt(h.slice(1,3),16)/255;
+            const g = parseInt(h.slice(3,5),16)/255;
+            const b = parseInt(h.slice(5,7),16)/255;
+            return [r,g,b];
+        };
+        console.log(gl);
+        if (gl) {
+            console.log('Using WebGL for fractal rendering');
+            // Basic passthrough vertex shader
+            const vsSource = `
+            attribute vec2 a_position;
+            varying vec2 v_uv;
+            void main() {
+                // map from [-1,1] -> [0,1], then flip Y to match canvas coord system
+                v_uv = vec2(a_position.x * 0.5 + 0.5, 1.0 - (a_position.y * 0.5 + 0.5));
+                gl_Position = vec4(a_position, 0.0, 1.0);
+            }
+            `;
+
+            // Convert JS user expressions to GLSL-ish expressions
+            const toGLSL = (expr) => {
+            if (!expr) return '0.0';
+            let s = expr
+                .replace(/Math\./g, '')          // Math.abs -> abs, Math.sin -> sin etc
+                .replace(/z\.real/g, 'zr')
+                .replace(/z\.imag/g, 'zi')
+                .replace(/c\.real/g, 'cr')
+                .replace(/c\.imag/g, 'ci')
+                .replace(/\*\*/g, '^')
+            ;         // fallback, will replace below
+
+            // Convert integer literals to float literals (e.g. 2 -> 2.0) so GLSL doesn't try to mix int*float
+            // Note: this targets standalone integer tokens and avoids touching things like property names.
+            s = s.replace(/(\b\d+)(?!\.)\b/g, '$1.0');
+
+            // Replace power operator a ^ b with pow(a,b) (simple heuristic)
+            s = s.replace(/([0-9A-Za-z_\)\.\]\}]+)\s*\^\s*([0-9A-Za-z_\(\.\[\{]+)/g, 'pow($1,$2)');
+            return s;
+            };
+
+            const realExpr = toGLSL(customRealFunction);
+            const imagExpr = toGLSL(customImagFunction);
+            console.log('GLSL real expression:', realExpr);
+            console.log('GLSL imag expression:', imagExpr);
+            // Fragment shader performs iterations in GPU
+            const fsSource = `
+            // Use high precision for better zoom levels
+            precision highp float;
+            varying vec2 v_uv;
+            uniform vec2 u_resolution;
+            uniform float u_xMin;
+            uniform float u_xMax;
+            uniform float u_yMin;
+            uniform float u_yMax;
+            uniform int u_maxIter;
+            uniform vec3 u_color;
+
+            // user-provided expressions will use zr, zi, cr, ci
+            float sqr(float x){ return x*x; }
+
+            void main() {
+                vec2 frag = v_uv * u_resolution;
+                float x = frag.x;
+                float y = frag.y;
+                float cr = u_xMin + (x / u_resolution.x) * (u_xMax - u_xMin);
+                float ci = u_yMin + (y / u_resolution.y) * (u_yMax - u_yMin);
+
+                float zr = 0.0;
+                float zi = 0.0;
+                int iter = 0;
+                // GLSL requires constant loop bound; set safely above typical max
+                const int MAX_LOOP = 512;
+                for (int i = 0; i < MAX_LOOP; i++) {
+                if (i >= u_maxIter) break;
+
+                // Injected user expressions (must use zr,zi,cr,ci and GLSL functions)
+                float newZr = ${realExpr};
+                float newZi = ${imagExpr};
+
+                zr = newZr;
+                zi = newZi;
+
+                if (sqr(zr) + sqr(zi) > 4.0) {
+                    iter = i + 1;
+                    break;
+                }
+                // if we reach the max provided iter without escape, mark as inside
+                if (i == u_maxIter - 1) {
+                    iter = u_maxIter;
+                }
+                }
+
+                if (iter == u_maxIter) {
+                gl_FragColor = vec4(0.0, 0.0, 0.0, 1.0);
+                } else {
+                float t = float(iter) / float(u_maxIter);
+                vec3 col = u_color * t;
+                gl_FragColor = vec4(col, 1.0);
+                }
+            }
+            `;
+
+            // Compile helpers
+            const compile = (src, type) => {
+            const sh = gl.createShader(type);
+            gl.shaderSource(sh, src);
+            gl.compileShader(sh);
+            if (!gl.getShaderParameter(sh, gl.COMPILE_STATUS)) {
+                const err = gl.getShaderInfoLog(sh);
+                gl.deleteShader(sh);
+                throw new Error(err);
+            }
+            return sh;
+            };
+
+            let program;
+            try {
+            const vs = compile(vsSource, gl.VERTEX_SHADER);
+            const fs = compile(fsSource, gl.FRAGMENT_SHADER);
+            program = gl.createProgram();
+            gl.attachShader(program, vs);
+            gl.attachShader(program, fs);
+            gl.linkProgram(program);
+            if (!gl.getProgramParameter(program, gl.LINK_STATUS)) {
+                throw new Error(gl.getProgramInfoLog(program));
+            }
+            } catch (err) {
+            // Fallback to CPU renderer on shader compile error
+            console.warn('WebGL shader failed, falling back to CPU:', err.message);
+            }
+
+            if (program) {
+            gl.viewport(0, 0, width, height);
+            gl.clearColor(0,0,0,1);
+            gl.clear(gl.COLOR_BUFFER_BIT);
+
+            const posLoc = gl.getAttribLocation(program, 'a_position');
+            const buf = gl.createBuffer();
+            gl.bindBuffer(gl.ARRAY_BUFFER, buf);
+            // full-screen triangle strip
+            const verts = new Float32Array([
+                -1, -1,
+                1, -1,
+                -1, 1,
+                1, 1
+            ]);
+            gl.bufferData(gl.ARRAY_BUFFER, verts, gl.STATIC_DRAW);
+
+            gl.useProgram(program);
+            gl.enableVertexAttribArray(posLoc);
+            gl.vertexAttribPointer(posLoc, 2, gl.FLOAT, false, 0, 0);
+
+            // set uniforms
+            const u_resolution = gl.getUniformLocation(program, 'u_resolution');
+            const u_xMin = gl.getUniformLocation(program, 'u_xMin');
+            const u_xMax = gl.getUniformLocation(program, 'u_xMax');
+            const u_yMin = gl.getUniformLocation(program, 'u_yMin');
+            const u_yMax = gl.getUniformLocation(program, 'u_yMax');
+            const u_maxIter = gl.getUniformLocation(program, 'u_maxIter');
+            const u_color = gl.getUniformLocation(program, 'u_color');
+
+            gl.uniform2f(u_resolution, width, height);
+            gl.uniform1f(u_xMin, xMin);
+            gl.uniform1f(u_xMax, xMax);
+            gl.uniform1f(u_yMin, yMin);
+            gl.uniform1f(u_yMax, yMax);
+            gl.uniform1i(u_maxIter, Math.min(maxIterations, 512));
+            const rgb = hexToRGB(shade);
+            gl.uniform3f(u_color, rgb[0], rgb[1], rgb[2]);
+
+            gl.drawArrays(gl.TRIANGLE_STRIP, 0, 4);
+
+            // Done with WebGL rendering - skip 2D putImageData
+            setLoading(false);
+            return;
+            }
+        }
+
+        console.log("Fallback: CPU rendering (original loop)");
+        const ctx = canvas.getContext('2d');
+        
+        const imageData = ctx.createImageData(width, height);
+
         for (let y = 0; y < height; y++) {
             for (let x = 0; x < width; x++) {
-                const c = mapToComplex(x, y);
-                let z = { real: 0, imag: 0 };
-                let iter = 0;
+            const c = mapToComplex(x, y);
+            let z = { real: 0, imag: 0 };
+            let iter = 0;
 
-                while (z.real * z.real + z.imag * z.imag <= 4 && iter < maxIterations) {
-                    // Mandelbrot:
-                    // z = z^2 + c until |z| > 2 or max iterations
-                    // const real = z.real * z.real - z.imag * z.imag + c.real;
-                    // const imag = 2 * z.real * z.imag + c.imag;
-                    // Burning Ship:
-                    // z = |Re(z)|^2 - |Im(z)|^2 + c
-                    // In the while loop, replace the Mandelbrot/Burning Ship calculation with:
+            while (z.real * z.real + z.imag * z.imag <= 4 && iter < maxIterations) {
+                const result = fn(z, c);
+                z.real = result.real;
+                z.imag = result.imag;
+                iter++;
+            }
 
-                    const result = fn(z, c);
-                    z.real = result.real;
-                    z.imag = result.imag;
-                    iter++;
-                }
-
-                // Color based on iterations
-                const idx = (y * width + x) * 4;
-                if (iter === maxIterations) {
-                    // Points in the set are black
-                    imageData.data[idx] = 0;
-                    imageData.data[idx + 1] = 0;
-                    imageData.data[idx + 2] = 0;
-                } else {
-                    // TODO allow different color maps, currently just a gradient from black to red based on iterations
-                    // Points outside are colored based on iteration count
-                    const color = iter / maxIterations;
-                    // Convert the hex color to RGB and apply the iteration-based intensity
-                    const r = parseInt(color * (parseInt(shade.slice(1, 3), 16)));
-                    const g = parseInt(color * (parseInt(shade.slice(3, 5), 16)));
-                    const b = parseInt(color * (parseInt(shade.slice(5, 7), 16)));
-                    imageData.data[idx] = r;
-                    imageData.data[idx + 1] = g;
-                    imageData.data[idx + 2] = b;
-                }
-                imageData.data[idx + 3] = 255; // Alpha channel
+            const idx = (y * width + x) * 4;
+            if (iter === maxIterations) {
+                imageData.data[idx] = 0;
+                imageData.data[idx + 1] = 0;
+                imageData.data[idx + 2] = 0;
+            } else {
+                const color = iter / maxIterations;
+                const r = parseInt(color * (parseInt(shade.slice(1, 3), 16)));
+                const g = parseInt(color * (parseInt(shade.slice(3, 5), 16)));
+                const b = parseInt(color * (parseInt(shade.slice(5, 7), 16)));
+                imageData.data[idx] = r;
+                imageData.data[idx + 1] = g;
+                imageData.data[idx + 2] = b;
+            }
+            imageData.data[idx + 3] = 255;
             }
         }
 
