@@ -5,7 +5,8 @@ import { useSearchParams } from 'react-router-dom';
 export default function Fractals() {
     const canvasRef = useRef(null);
     const [loading, setLoading] = useState(true);
-    
+    const [copySuccess, setCopySuccess] = useState(false);
+
     // Three different colors: one for the inside of the set, one for the outside, and one in-between.
     // Interpolation is done between the two last colors
     const [shadeStart, setShadeStart] = useState('#F66151');
@@ -223,25 +224,32 @@ export default function Fractals() {
 
             // Done with WebGL rendering - skip 2D putImageData
             setLoading(false);
-            // Update the URL with current config
-            const config = {
-                xMin: viewPosition.xMin,
-                xMax: viewPosition.xMax,
-                yMin: viewPosition.yMin,
-                yMax: viewPosition.yMax,
-                maxIterations: maxIterations,
-                resolution: resolution,
-                shadeStart: shadeStart,
-                shadeEnd: shadeEnd,
-                setColor: setColor,
-                realFunction: realFunction,
-                imagFunction: imagFunction
-            };
-            setFractalConfig(config);
 
             return;
         }
     };
+
+    // Debounced URL sync — updates query params 500ms after the last state change
+    // This avoids crashing the browser when the states are updated too frequently, because the URL cannot update infinitely fast in most browsers. 
+    // It also allows users to change multiple parameters (e.g. pan and zoom) without filling their URL history with intermediate states.
+    useEffect(() => {
+        const timer = setTimeout(() => {
+            setFractalConfig({
+                xMin: viewPosition.xMin,
+                xMax: viewPosition.xMax,
+                yMin: viewPosition.yMin,
+                yMax: viewPosition.yMax,
+                maxIterations,
+                resolution,
+                shadeStart,
+                shadeEnd,
+                setColor,
+                realFunction,
+                imagFunction
+            }, { replace: true });
+        }, 500);
+        return () => clearTimeout(timer);
+    }, [viewPosition, maxIterations, resolution, realFunction, imagFunction, shadeStart, shadeEnd, setColor]);
 
     // Set parameters from URL on initial load
     useEffect(() => {
@@ -360,6 +368,13 @@ export default function Fractals() {
         });
     };
 
+    const copyLink = () => {
+        navigator.clipboard.writeText(window.location.href);
+        // Render a temporary "copied!" message for 1 second
+        setCopySuccess(true);
+        setTimeout(() => setCopySuccess(false), 1000);
+    };
+
     return (
         <div className="fractal-container">
             <h1>Fractal explorer</h1>
@@ -432,6 +447,8 @@ export default function Fractals() {
                             </p>
                         );
                     })()}
+                    <button onClick={copyLink} style={{ marginTop: '10px', padding: '3px 10px', fontSize: '1em' }}>Share this fractal 🔗</button>
+                    {copySuccess && <span style={{ marginLeft: '10px', color: 'white' }}>✓ Link copied</span>}
                 </div>
                 
                 <div className="fractal-section" style={{ flex: 1 }}>
