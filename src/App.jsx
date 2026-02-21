@@ -2,16 +2,20 @@ import React from 'react';
 import './styles/index.css';
 import {
     BrowserRouter as Router,
-    Switch,
-    Route
+    Routes,
+    Route,
+    useLocation
 } from 'react-router-dom';
-//import styled from 'styled-components';
 
 import SolarSystem from './pages/solar-system';
 import Header from './header';
 import Footer from './footer';
 import Page from './components/page';
 
+function ConditionalHeader() {
+    const location = useLocation();
+    return location.pathname !== '/' ? <Header /> : null;
+}
 
 export default class App extends React.Component {
     constructor(props) {
@@ -32,23 +36,23 @@ export default class App extends React.Component {
         return (
             <>
                 <Router>
-                    <Route path='/' render={ ( props ) => ( props.location.pathname !== '/') && <Header key="header"/> }/>
-                    <Switch>
+                    <ConditionalHeader/>
+                    <Routes>
                         {this.pagePaths.map((pathInfo) => (
-                                <Route path={pathInfo.path} key={pathInfo.path + "-r"}>
-                                    <Page key={pathInfo.path}
+                                <Route path={pathInfo.path} key={pathInfo.path + "-r"}
+                                    element={<Page key={pathInfo.path}
                                           src={pathInfo.path.substring(1)}
-                                          image={pathInfo.image}/>
-                                </Route>
+                                          image={pathInfo.image}/>}
+                                />
                             )
                         )}
-                        <Route exact path='/'>
-                            <SolarSystem/>
-                        </Route>
-                        <Route>
-                            <Page src='error'/>
-                        </Route>
-                    </Switch>
+                        <Route exact path='/'
+                            element={<SolarSystem/>}
+                        />
+                        <Route path='*'
+                            element={<Page src='error'/>}
+                        />
+                    </Routes>
                 </Router>
                 <Footer/>
             </>

@@ -9,7 +9,7 @@ export default defineConfig({
     port: 4173,
   },
   plugins: [
-    react({ jsxRuntime: 'classic' }),
+    react(),
     dynamicImport(),
   ],
 });

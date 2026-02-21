@@ -1,7 +1,7 @@
 import React from 'react';
 import styled, {keyframes} from 'styled-components';
 import {Link} from 'react-router-dom';
-import ReactTooltip from 'react-tooltip';
+import {Tooltip} from 'react-tooltip';
 const ROTATION_CONSTANT = 0.05;
 
 export default class Planet extends React.Component {
@@ -57,10 +57,10 @@ export default class Planet extends React.Component {
         const Container = this.state.content;
         return (
             <>
-                <ReactTooltip id={this.state.text+"-p"} place="bottom" type="dark" effect="float"/>
+                <Tooltip id={this.state.text+"-p"} place="bottom" variant="dark"/>
                 <Container
                     to={this.state.href} image={this.props.image}
-                    data-for={this.state.text+"-p"} data-tip={this.state.text}
+                    data-tooltip-id={this.state.text+"-p"} data-tooltip-content={this.state.text}
                 />
             </>
         );
