@@ -3,3 +3,5 @@
 # simonthor.github.io
 
 This is the compiled code for the website. For more information, go to the [`react` branch](https://github.com/simonthor/simonthor.github.io/tree/react)
+
+The "About" page is outdated.
