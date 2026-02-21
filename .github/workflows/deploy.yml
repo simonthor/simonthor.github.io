@@ -1,4 +1,4 @@
-# Workflow for deploying static website built with Deno, React, and Vite to GitHub Pages
+# Simple workflow for deploying static content to GitHub Pages
 name: Deploy static content to Pages
 
 on:
@@ -23,37 +23,29 @@ concurrency:
 jobs:
   # Build and deploy job
   deploy:
-    permissions:
-      id-token: write
-      contents: read
-
     environment:
       name: github-pages
       url: ${{ steps.deployment.outputs.page_url }}
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
-
-      - name: Install Deno
-        uses: denoland/setup-deno@v2
+        uses: actions/checkout@v5
+      - name: Set up Node
+        uses: actions/setup-node@v6
         with:
-          deno-version: v2.x
-
-      - name: Setup Pages
-        uses: actions/configure-pages@v4
-
+          node-version: lts/*
+          cache: 'npm'
       - name: Install dependencies
-        run: deno install --node-modules-dir=auto
-
-      - name: Build with Deno, Vite, and React
-        run: deno task build
-
+        run: npm ci
+      - name: Build
+        run: npm run build
+      - name: Setup Pages
+        uses: actions/configure-pages@v5
       - name: Upload artifact
-        uses: actions/upload-pages-artifact@v3
+        uses: actions/upload-pages-artifact@v4
         with:
+          # Upload dist folder
           path: './dist'
-
       - name: Deploy to GitHub Pages
         id: deployment
         uses: actions/deploy-pages@v4

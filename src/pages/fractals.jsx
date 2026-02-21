@@ -1,3 +1,4 @@
+import React from 'react';
 import { useState, useEffect, useRef } from 'react';
 
 export default function Fractals() {
@@ -36,7 +37,7 @@ export default function Fractals() {
         setLoading(true);
         
         // Try to use WebGL for acceleration
-        const gl = canvas.getContext('webgl') || canvas.getContext('experimental-webgl');
+        const gl = canvas.getContext('webgl', {preserveDrawingBuffer: true}) || canvas.getContext('experimental-webgl', {preserveDrawingBuffer: true});
         const hexToRGB = (h) => {
             const r = parseInt(h.slice(1,3),16)/255;
             const g = parseInt(h.slice(3,5),16)/255;
