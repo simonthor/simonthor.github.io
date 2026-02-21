@@ -5,7 +5,12 @@ export default function Fractals() {
     const canvasRef = useRef(null);
     const [loading, setLoading] = useState(true);
     
-    const [shade, setShade] = useState('#62A0EA');
+    // Three different colors: one for the inside of the set, one for the outside, and one in-between.
+    // Interpolation is done between the two last colors
+    const [shadeStart, setShadeStart] = useState('#F66151');
+    const [shadeEnd, setShadeEnd] = useState('#241F31');
+    const [setColor, setSetColor] = useState('#000000');
+    
     const [maxIterations, setMaxIterations] = useState(32);
     const [resolution, setResolution] = useState(500);
     // Add state for managing view position
@@ -76,6 +81,7 @@ export default function Fractals() {
             gl_Position = vec4(a_position, 0.0, 1.0);
         }
         `;
+        const rgbSet = hexToRGB(setColor);
 
         // Fragment shader performs iterations in GPU
         const fsSource = `
@@ -88,7 +94,8 @@ export default function Fractals() {
         uniform float u_yMin;
         uniform float u_yMax;
         uniform int u_maxIter;
-        uniform vec3 u_color;
+        uniform vec3 u_color_start;
+        uniform vec3 u_color_end;
 
         // user-provided expressions will use zr, zi, cr, ci
         float sqr(float x){ return x*x; }
@@ -103,49 +110,50 @@ export default function Fractals() {
             float zr = 0.0;
             float zi = 0.0;
             int iter = 0;
+            
             // GLSL requires constant loop bound; set safely above typical max
             const int MAX_LOOP = 512;
             for (int i = 0; i < MAX_LOOP; i++) {
-            if (i >= u_maxIter) break;
+                if (i >= u_maxIter) break;
 
-            // Injected user expressions (must use zr,zi,cr,ci and GLSL functions)
-            float newZr = ${realExpr};
-            float newZi = ${imagExpr};
+                // Injected user expressions (must use zr,zi,cr,ci and GLSL functions)
+                float newZr = ${realExpr};
+                float newZi = ${imagExpr};
 
-            zr = newZr;
-            zi = newZi;
+                zr = newZr;
+                zi = newZi;
 
-            if (sqr(zr) + sqr(zi) > 4.0) {
-                iter = i + 1;
-                break;
-            }
-            // if we reach the max provided iter without escape, mark as inside
-            if (i == u_maxIter - 1) {
-                iter = u_maxIter;
-            }
+                if (sqr(zr) + sqr(zi) > 4.0) {
+                    iter = i + 1;
+                    break;
+                }
+                // if we reach the max provided iter without escape, mark as inside
+                if (i == u_maxIter - 1) {
+                    iter = u_maxIter;
+                }
             }
 
             if (iter == u_maxIter) {
-            gl_FragColor = vec4(0.0, 0.0, 0.0, 1.0);
+                gl_FragColor = vec4(${rgbSet[0]}, ${rgbSet[1]}, ${rgbSet[2]}, 1.0);
             } else {
-            float t = float(iter) / float(u_maxIter);
-            vec3 col = u_color * t;
-            gl_FragColor = vec4(col, 1.0);
+                float t = float(iter) / float(u_maxIter);
+                vec3 col = u_color_end + t * (u_color_start - u_color_end);
+                gl_FragColor = vec4(col, 1.0);
             }
         }
         `;
 
         // Compile helpers
         const compile = (src, type) => {
-        const sh = gl.createShader(type);
-        gl.shaderSource(sh, src);
-        gl.compileShader(sh);
-        if (!gl.getShaderParameter(sh, gl.COMPILE_STATUS)) {
-            const err = gl.getShaderInfoLog(sh);
-            gl.deleteShader(sh);
-            throw new Error(err);
-        }
-            return sh;
+            const sh = gl.createShader(type);
+            gl.shaderSource(sh, src);
+            gl.compileShader(sh);
+            if (!gl.getShaderParameter(sh, gl.COMPILE_STATUS)) {
+                const err = gl.getShaderInfoLog(sh);
+                gl.deleteShader(sh);
+                throw new Error(err);
+            }
+                return sh;
         };
 
         let program;
@@ -159,11 +167,11 @@ export default function Fractals() {
             if (!gl.getProgramParameter(program, gl.LINK_STATUS)) {
                 throw new Error(gl.getProgramInfoLog(program));
             }
-        } catch (err) {
-            // Fallback to CPU renderer on shader compile error
-            console.warn('WebGL shader failed, falling back to CPU:', err.message);
+        } catch (e) {
+            setFunctionError('Error in shader: ' + e.message);
+            return;
         }
-
+        
         if (program) {
             gl.viewport(0, 0, width, height);
             gl.clearColor(0,0,0,1);
@@ -200,8 +208,13 @@ export default function Fractals() {
             gl.uniform1f(u_yMin, yMin);
             gl.uniform1f(u_yMax, yMax);
             gl.uniform1i(u_maxIter, Math.min(maxIterations, 512));
-            const rgb = hexToRGB(shade);
-            gl.uniform3f(u_color, rgb[0], rgb[1], rgb[2]);
+            const rgbStart = hexToRGB(shadeStart);
+            const rgbEnd = hexToRGB(shadeEnd);
+            // When the fractal has the maximum iteration value, it should be shadeStart. If it has the minimum iteration value (1), it should be shadeEnd. So we want to interpolate from shadeEnd to shadeStart as iteration goes from 1 to maxIterations. This means the base color (when t=0) is shadeEnd, and we add (shadeStart - shadeEnd) * t to it.
+            const u_color_start = gl.getUniformLocation(program, 'u_color_start');
+            const u_color_end = gl.getUniformLocation(program, 'u_color_end');
+            gl.uniform3f(u_color_start, rgbStart[0], rgbStart[1], rgbStart[2]);
+            gl.uniform3f(u_color_end, rgbEnd[0], rgbEnd[1], rgbEnd[2]);
 
             gl.drawArrays(gl.TRIANGLE_STRIP, 0, 4);
 
@@ -214,7 +227,7 @@ export default function Fractals() {
     // Initial render
     useEffect(() => {
         renderFractal();
-    }, [viewPosition, maxIterations, resolution, customRealFunction, customImagFunction, shade]);
+    }, [viewPosition, maxIterations, resolution, customRealFunction, customImagFunction, shadeStart, shadeEnd, setColor]);
 
 
     // Handle mouse events for panning
@@ -336,9 +349,20 @@ export default function Fractals() {
                         />
                     <br/>
                     {functionError && <p style={{ color: 'red' }}>{functionError}</p>}
-                    <label htmlFor="color">Color:</label>
-                    <input type="color" id="color" name="color" value={shade} onChange={(e) => {setShade(e.target.value);}}/>
+                    <label htmlFor="shadeStart">Shade: </label>
+                    <input type="color" id="shadeStart" name="shadeStart" value={shadeStart} onChange={(e) => {setShadeStart(e.target.value);}}/>
+                    
+                    <span style={{ margin: '0 1em' }}></span>
+                    
+                    <label htmlFor="shadeEnd"> Outer color: </label>
+                    <input type="color" id="shadeEnd" name="shadeEnd" value={shadeEnd} onChange={(e) => {setShadeEnd(e.target.value);}}/>
+                    
+                    <span style={{ margin: '0 1em' }}></span>
+                    
+                    <label htmlFor="setColor">Inner color: </label>
+                    <input type="color" id="setColor" name="setColor" value={setColor} onChange={(e) => {setSetColor(e.target.value);}}/>
                     <p>Click and drag to pan, scroll to zoom</p>
+
                     {(() => {
                         const rangeX = viewPosition.xMax - viewPosition.xMin;
                         const rangeY = viewPosition.yMax - viewPosition.yMin;
