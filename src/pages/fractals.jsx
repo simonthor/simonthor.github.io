@@ -1,5 +1,6 @@
 import React from 'react';
 import { useState, useEffect, useRef } from 'react';
+import { useSearchParams } from 'react-router-dom';
 
 export default function Fractals() {
     const canvasRef = useRef(null);
@@ -23,11 +24,13 @@ export default function Fractals() {
     const [isPanning, setIsPanning] = useState(false);
     const [startPanPosition, setStartPanPosition] = useState({ x: 0, y: 0 });
     
-    const [customRealFunction, setCustomRealFunction] = useState('zr*zr - zi*zi + cr');
+    const [realFunction, setRealFunction] = useState('zr*zr - zi*zi + cr');
     const [functionError, setFunctionError] = useState('');
     
-    const [customImagFunction, setCustomImagFunction] = useState('abs(2*zr*zi) + ci');
+    const [imagFunction, setImagFunction] = useState('abs(2*zr*zi) + ci');
 
+    const [fractalConfig, setFractalConfig] = useSearchParams();
+    
     // Function to render the fractal with current view position
     const renderFractal = () => {
         const canvas = canvasRef.current;
@@ -68,8 +71,8 @@ export default function Fractals() {
 
             return s;
         };
-        const realExpr = toGLSL(customRealFunction);
-        const imagExpr = toGLSL(customImagFunction);
+        const realExpr = toGLSL(realFunction);
+        const imagExpr = toGLSL(imagFunction);
 
         // Basic passthrough vertex shader
         const vsSource = `
@@ -220,14 +223,60 @@ export default function Fractals() {
 
             // Done with WebGL rendering - skip 2D putImageData
             setLoading(false);
+            // Update the URL with current config
+            const config = {
+                xMin: viewPosition.xMin,
+                xMax: viewPosition.xMax,
+                yMin: viewPosition.yMin,
+                yMax: viewPosition.yMax,
+                maxIterations: maxIterations,
+                resolution: resolution,
+                shadeStart: shadeStart,
+                shadeEnd: shadeEnd,
+                setColor: setColor,
+                realFunction: realFunction,
+                imagFunction: imagFunction
+            };
+            setFractalConfig(config);
+
             return;
         }
     };
 
+    // Set parameters from URL on initial load
+    useEffect(() => {
+        const config = {
+            xMin: parseFloat(fractalConfig.get('xMin')) || -2,
+            xMax: parseFloat(fractalConfig.get('xMax')) || 1,
+            yMin: parseFloat(fractalConfig.get('yMin')) || -1.5,
+            yMax: parseFloat(fractalConfig.get('yMax')) || 1.5,
+            maxIterations: parseInt(fractalConfig.get('maxIterations')) || 32,
+            resolution: parseInt(fractalConfig.get('resolution')) || 500,
+            shadeStart: fractalConfig.get('shadeStart') || '#F66151',
+            shadeEnd: fractalConfig.get('shadeEnd') || '#241F31',
+            setColor: fractalConfig.get('setColor') || '#000000',
+            realFunction: fractalConfig.get('realFunction') || 'zr*zr - zi*zi + cr',
+            imagFunction: fractalConfig.get('imagFunction') || 'abs(2*zr*zi) + ci'
+        };
+        setViewPosition({
+            xMin: config.xMin,
+            xMax: config.xMax,
+            yMin: config.yMin,
+            yMax: config.yMax
+        });
+        setMaxIterations(config.maxIterations);
+        setResolution(config.resolution);
+        setShadeStart(config.shadeStart);
+        setShadeEnd(config.shadeEnd);
+        setSetColor(config.setColor);
+        setRealFunction(config.realFunction);
+        setImagFunction(config.imagFunction);
+    }, []);
+
     // Initial render
     useEffect(() => {
         renderFractal();
-    }, [viewPosition, maxIterations, resolution, customRealFunction, customImagFunction, shadeStart, shadeEnd, setColor]);
+    }, [viewPosition, maxIterations, resolution, realFunction, imagFunction, shadeStart, shadeEnd, setColor]);
 
 
     // Handle mouse events for panning
@@ -318,30 +367,30 @@ export default function Fractals() {
                 <div className="fractal-controls" style={{ flex: '0 0 40%', marginRight: '20px', fontSize: '1.5em' }}>
                     <h2>Controls</h2>
                     <label htmlFor="resolution">Resolution: {resolution}x{resolution}</label><br/>
-                    <input type="range" id="resolution" name="resolution" min="100" max="1000" step="10" style={{width: "100%"}} defaultValue="500" onChange={(e) => setResolution(parseInt(e.target.value))}/>
+                    <input type="range" id="resolution" name="resolution" min="100" max="3000" step="50" style={{width: "100%"}} value={resolution} onChange={(e) => setResolution(parseInt(e.target.value))}/>
                     <br/>
                     <label htmlFor="iterations">Number of colors: {maxIterations}</label><br/>
-                    <input type="range" id="iterations" name="iterations" min="1" max="256" style={{width: "100%"}} defaultValue="32" onChange={(e) => setMaxIterations(parseInt(e.target.value))}/>
+                    <input type="range" id="iterations" name="iterations" min="1" max="512" style={{width: "100%"}} value={maxIterations} onChange={(e) => setMaxIterations(parseInt(e.target.value))}/>
                     <br/>
-                    <label htmlFor="customRealFunction">z<sub>i+1</sub>= </label>
+                    <label htmlFor="realFunction">z<sub>i+1</sub>= </label>
                     <input 
                         type="text" 
-                        id="customRealFunction" 
-                        value={customRealFunction}
+                        id="realFunction" 
+                        value={realFunction}
                         onChange={(e) => {
-                            setCustomRealFunction(e.target.value);
+                            setRealFunction(e.target.value);
                             setFunctionError('');
                         }}
                         placeholder="e.g., zr^2 - zi^2 + cr"
                         style={{ width: '40%', marginBottom: '10px', fontSize: '1em' }}
                     />
-                    <label htmlFor="customImagFunction"> + i</label>
+                    <label htmlFor="imagFunction"> + i</label>
                     <input 
                         type="text" 
-                        id="customImagFunction" 
-                        value={customImagFunction}
+                        id="imagFunction" 
+                        value={imagFunction}
                         onChange={(e) => {
-                            setCustomImagFunction(e.target.value);
+                            setImagFunction(e.target.value);
                             setFunctionError('');
                         }}
                         placeholder="e.g., abs(2*zr*zi) + ci"
