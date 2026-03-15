@@ -204,7 +204,9 @@ export default function Fractals() {
             const u_yMin = gl.getUniformLocation(program, 'u_yMin');
             const u_yMax = gl.getUniformLocation(program, 'u_yMax');
             const u_maxIter = gl.getUniformLocation(program, 'u_maxIter');
-            const u_color = gl.getUniformLocation(program, 'u_color');
+            // When the fractal has the maximum iteration value, it should be shadeStart. If it has the minimum iteration value (1), it should be shadeEnd. So we want to interpolate from shadeEnd to shadeStart as iteration goes from 1 to maxIterations. This means the base color (when t=0) is shadeEnd, and we add (shadeStart - shadeEnd) * t to it.
+            const u_color_start = gl.getUniformLocation(program, 'u_color_start');
+            const u_color_end = gl.getUniformLocation(program, 'u_color_end');
 
             gl.uniform2f(u_resolution, width, height);
             gl.uniform1f(u_xMin, xMin);
@@ -214,9 +216,6 @@ export default function Fractals() {
             gl.uniform1i(u_maxIter, Math.min(maxIterations, 512));
             const rgbStart = hexToRGB(shadeStart);
             const rgbEnd = hexToRGB(shadeEnd);
-            // When the fractal has the maximum iteration value, it should be shadeStart. If it has the minimum iteration value (1), it should be shadeEnd. So we want to interpolate from shadeEnd to shadeStart as iteration goes from 1 to maxIterations. This means the base color (when t=0) is shadeEnd, and we add (shadeStart - shadeEnd) * t to it.
-            const u_color_start = gl.getUniformLocation(program, 'u_color_start');
-            const u_color_end = gl.getUniformLocation(program, 'u_color_end');
             gl.uniform3f(u_color_start, rgbStart[0], rgbStart[1], rgbStart[2]);
             gl.uniform3f(u_color_end, rgbEnd[0], rgbEnd[1], rgbEnd[2]);
 
