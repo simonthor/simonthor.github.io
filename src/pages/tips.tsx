@@ -156,7 +156,6 @@ const Tips = () => {
                     <option value='astronomy'>astronomy</option>
                     <option value='mathematics'>mathematics</option>
                     <option value='biology'>biology</option>
-                    <option value='biology'>biology</option>
                 </SubjectSelect>
                 <TypeSelect id='type' onChange={getInputChange}>
                     <option value='type'>type</option>
