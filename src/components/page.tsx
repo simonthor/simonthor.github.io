@@ -209,7 +209,7 @@ const Background = styled.div`
     }
 `;
 
-export default function Page({src}: PageProps): JSX.Element {
+const Page = ({src}: PageProps) => {
     const Content = pageComponents[src] ?? pageComponents.error;
 
     // TODO: make new planet images
@@ -223,3 +223,5 @@ export default function Page({src}: PageProps): JSX.Element {
         </Background>
     );
 }
+
+export default Page;

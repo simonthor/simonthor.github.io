@@ -1,4 +1,4 @@
-import {Fragment, JSX, useEffect, useState} from 'react';
+import {Fragment, useEffect, useState} from 'react';
 import styled from 'styled-components';
 import Planet from '../components/planet';
 import planetsData from '../data/planets.json';
@@ -17,7 +17,7 @@ type ScreenSize = {
     screenHeight: number;
 };
 
-const SolarSystem: React.FC<JSX.Element> = () => {
+const SolarSystem = () => {
     const [screenSize, setScreenSize] = useState<ScreenSize>({
         screenWidth: window.innerWidth,
         screenHeight: window.innerHeight
@@ -39,7 +39,7 @@ const SolarSystem: React.FC<JSX.Element> = () => {
 
     const isMobile = (Math.min(screenSize.screenWidth, screenSize.screenHeight) < 500);
 
-    let planetContainer: JSX.Element;
+    let planetContainer;
     if (isMobile) {
         planetContainer = (
             <MobileContainer>

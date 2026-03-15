@@ -1,7 +1,6 @@
-import { JSX } from 'react';
 import {Link} from 'react-router-dom';
 
-const About: React.FC<JSX.Element> = () => {
+const About = () => {
     return (
         <>
             <h1>Introduction</h1>

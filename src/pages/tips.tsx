@@ -1,4 +1,4 @@
-import type {ChangeEvent, JSX} from 'react';
+import type {ChangeEvent} from 'react';
 import {useState} from 'react';
 import styled, {css} from 'styled-components';
 import tipsData from '../data/tips.json';
@@ -68,7 +68,7 @@ const ArchiveContainer = styled.div`
     ${widgetStyle};
 `;
 
-function conditionsFullFilled(tip: TipEntry, criteria: TipsCriteria): boolean {
+const conditionsFullFilled = (tip: TipEntry, criteria: TipsCriteria): boolean => {
     if (!(tip['season'] === criteria['season'] || criteria['season'] === 'season' || tip['season'] === 'season')) {
         return false;
     }
@@ -90,7 +90,7 @@ function conditionsFullFilled(tip: TipEntry, criteria: TipsCriteria): boolean {
     else return criteria['archive'] || !Object.prototype.hasOwnProperty.call(tip, 'archive') || !tip['archive'];
 }
 
-const Tips: React.FC<JSX.Element> = () => {
+const Tips = () => {
     // TODO: Add expand/collapse all button
     // TODO: improve appearance of buttons with CSS
     const [search, setSearch] = useState<string>('');

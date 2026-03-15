@@ -1,4 +1,4 @@
-import type {JSX, ReactNode} from 'react';
+import type {ReactNode} from 'react';
 
 // TODO: merge Repo and RefLink into one component
 type RefLinkProps = {
@@ -6,7 +6,7 @@ type RefLinkProps = {
     children: ReactNode;
 };
 
-function RefLink(props: RefLinkProps): JSX.Element {
+const RefLink = (props: RefLinkProps) => {
     return (
         <a href={props.href}>
             {props.children}
@@ -14,7 +14,7 @@ function RefLink(props: RefLinkProps): JSX.Element {
     );
 }
 
-const Research: React.FC<JSX.Element> = () => {
+const Research = () => {
     return (
         <>
             <h1>My Research Experience</h1>

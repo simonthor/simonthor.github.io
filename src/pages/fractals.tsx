@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
-import type { ChangeEvent, JSX, MouseEvent, WheelEvent } from 'react';
+import type { ChangeEvent, MouseEvent, WheelEvent } from 'react';
 import { useSearchParams } from 'react-router-dom';
 
 type ViewPosition = {
@@ -26,7 +26,7 @@ type FractalConfig = ViewPosition & {
     imagFunction: string;
 };
 
-const Fractals: React.FC<JSX.Element> = () => {
+const Fractals = () => {
     const canvasRef = useRef<HTMLCanvasElement | null>(null);
     const [loading, setLoading] = useState<boolean>(true);
     const [copySuccess, setCopySuccess] = useState<boolean>(false);

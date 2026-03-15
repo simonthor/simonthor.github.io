@@ -1,6 +1,5 @@
-import { JSX } from 'react';
 
-const ErrorPage: React.FC<JSX.Element> = () => {
+const ErrorPage = () => {
     return (
         <h1>404 - this page does not exist...</h1>
     );

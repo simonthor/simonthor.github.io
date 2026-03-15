@@ -14,7 +14,7 @@ type PlanetContainerProps = {
     'data-tooltip-content': string;
 };
 
-function createPlanetContainer(props: PlanetProps): ComponentType<PlanetContainerProps> {
+const createPlanetContainer = (props: PlanetProps): ComponentType<PlanetContainerProps> => {
     const {height, image, radius} = props;
     const width = props['width-rel'] ? props['width-rel'] * props.height : props.height;
 
@@ -58,7 +58,7 @@ function createPlanetContainer(props: PlanetProps): ComponentType<PlanetContaine
     return dynamicContainer;
 }
 
-export default function Planet(props: PlanetProps): JSX.Element {
+const Planet = (props: PlanetProps) => {
     const {text, href} = props;
     const Container = createPlanetContainer(props);
     const tooltipId = `${text}-p`;
@@ -73,3 +73,5 @@ export default function Planet(props: PlanetProps): JSX.Element {
         </>
     );
 }
+
+export default Planet;

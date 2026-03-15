@@ -16,13 +16,13 @@ const home: HeaderPlanet = {
     image: 'favicon'
 };
 
-function customizeProps(props: HeaderPlanet): PlanetData {
+const customizeProps = (props: HeaderPlanet): PlanetData => {
     // Removes radius and changes size of planets
     const {radius, ...rest} = props;
     return {...rest, height: 2.5};
 }
 
-export default function Header(): JSX.Element {
+const Header = (): JSX.Element => {
     const headerPlanets: HeaderPlanet[] = [home, ...planets];
 
     // TODO: add margin directly to planets using styled-components
@@ -37,3 +37,5 @@ export default function Header(): JSX.Element {
         </nav>
     );
 }
+
+export default Header;

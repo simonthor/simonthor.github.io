@@ -1,4 +1,3 @@
-import { JSX } from 'react';
 import {Link} from 'react-router-dom';
 //import styled from 'styled-components';
 
@@ -6,7 +5,7 @@ type RepoProps = {
     href: string;
 };
 
-function Repo(props: RepoProps): JSX.Element {
+const Repo = (props: RepoProps) => {
     // TODO: make this look better
     return (
         <a href={props.href}>
@@ -15,7 +14,7 @@ function Repo(props: RepoProps): JSX.Element {
     );
 }
 
-const  Programming: React.FC<JSX.Element> = () => {
+const Programming = () => {
 
     return (
         <>

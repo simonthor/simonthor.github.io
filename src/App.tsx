@@ -24,12 +24,12 @@ const pagePaths: PagePath[] = [
     {path: '/fractals', image: 'saturn'}
 ];
 
-function ConditionalHeader(): JSX.Element | null {
+const ConditionalHeader = () => {
     const location = useLocation();
     return location.pathname !== '/' ? <Header /> : null;
 }
 
-export default function App(): JSX.Element {
+const App = () => {
     // Only render header if not front page
     return (
         <>
@@ -53,3 +53,5 @@ export default function App(): JSX.Element {
         </>
     );
 }
+
+export default App;

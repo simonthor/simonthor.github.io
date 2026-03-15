@@ -16,7 +16,7 @@ const Header = styled.div`
     color: ${textColor};
 `;
 
-export default function Collapsible({title, children}: CollapsibleProps): JSX.Element {
+const Collapsible = ({title, children}: CollapsibleProps) => {
     const [open, setOpen] = useState<boolean>(false);
 
     return (
@@ -32,24 +32,5 @@ export default function Collapsible({title, children}: CollapsibleProps): JSX.El
         </div>
     );
 }
-/*
-        .header{
-        cursor: pointer;
-        border: solid 1px #f2f2f2;
-        padding: 15px;
-        background-color: #0089CC;
-        color: #FFF;
-        font-family: verdana;
-        }
 
-        .content{
-        cursor: pointer;
-        border-left: solid 1px #f2f2f2;
-        border-right: solid 1px #f2f2f2;
-        border-bottom: solid 1px #f2f2f2;
-        border-radius: 0 0 5px 5px;
-        padding: 15px;
-        font-family: verdana;
-        font-size: 14px;
-        }
-        */
+export default Collapsible;
