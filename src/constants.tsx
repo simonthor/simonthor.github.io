@@ -1,4 +1,6 @@
-export const baseColor = '#000f29';
-export const textColor = '#FFF'
+export const baseColor: string = '#000f29';
+export const textColor: string = '#FFF';
 // TODO: Use a CSS document instead?
-export default {textColor, baseColor};
+const colors: { textColor: string; baseColor: string } = {textColor, baseColor};
+
+export default colors;

@@ -1,7 +1,12 @@
-import React from 'react';
+import type {JSX, ReactNode} from 'react';
 
 // TODO: merge Repo and RefLink into one component
-function RefLink (props) {
+type RefLinkProps = {
+    href: string;
+    children: ReactNode;
+};
+
+function RefLink(props: RefLinkProps): JSX.Element {
     return (
         <a href={props.href}>
             {props.children}
@@ -9,7 +14,7 @@ function RefLink (props) {
     );
 }
 
-export default function Research() {
+const Research: React.FC<JSX.Element> = () => {
     return (
         <>
             <h1>My Research Experience</h1>
@@ -54,3 +59,5 @@ export default function Research() {
         </>
     );
 }
+
+export default Research;

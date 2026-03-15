@@ -1,17 +1,21 @@
-import React from 'react';
+import { JSX } from 'react';
 import {Link} from 'react-router-dom';
 //import styled from 'styled-components';
 
-function Repo(props) {
+type RepoProps = {
+    href: string;
+};
+
+function Repo(props: RepoProps): JSX.Element {
     // TODO: make this look better
     return (
         <a href={props.href}>
             code
         </a>
-    )
+    );
 }
 
-export default function Programming() {
+const  Programming: React.FC<JSX.Element> = () => {
 
     return (
         <>
@@ -91,3 +95,5 @@ export default function Programming() {
         </>
     );
 }
+
+export default Programming;

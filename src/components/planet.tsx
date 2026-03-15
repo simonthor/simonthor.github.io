@@ -1,68 +1,75 @@
-import React from 'react';
+import type {ComponentType} from 'react';
 import styled, {keyframes} from 'styled-components';
 import {Link} from 'react-router-dom';
 import {Tooltip} from 'react-tooltip';
+import type {PlanetData} from '../types';
+
 const ROTATION_CONSTANT = 0.05;
 
-export default class Planet extends React.Component {
-    constructor(props) {
-        super(props);
+type PlanetProps = PlanetData;
 
-        // Width of planet.
-        // Currently only applied to Saturn since it does not have the same width as height.
-        const width = props['width-rel'] ? props['width-rel'] * props.height : props.height;
+type PlanetContainerProps = {
+    to: string;
+    'data-tooltip-id': string;
+    'data-tooltip-content': string;
+};
 
-        // This is the rendered component which displays a planet.
-        let Container = styled(Link)`
-            display: inline-block;
-            text-align: center;
-            color: white;
-            height: ${props.height}rem; width: ${width}rem; line-height: ${props.height}rem;
-            background-image: url("/images/${props.image}.svg");
-            background-size: cover;
+function createPlanetContainer(props: PlanetProps): ComponentType<PlanetContainerProps> {
+    const {height, image, radius} = props;
+    const width = props['width-rel'] ? props['width-rel'] * props.height : props.height;
+
+    let dynamicContainer: ComponentType<PlanetContainerProps> = styled(Link)`
+        display: inline-block;
+        text-align: center;
+        color: white;
+        height: ${height}rem; width: ${width}rem; line-height: ${height}rem;
+        background-image: url("/images/${image}.svg");
+        background-size: cover;
+    `;
+
+    if (typeof radius === 'number') {
+        // Having an orbit radius implies that the planet should be moving
+        const radiusPixels = Math.floor(radius / 100 * Math.min(window.innerWidth, window.innerHeight) / 2);
+        // Kepler's law: https://sv.wikipedia.org/wiki/Keplers_lagar
+        const orbitPeriod = Math.floor(Math.sqrt(Math.pow(radius, 3) * ROTATION_CONSTANT));
+        const orbit = keyframes`
+            from {
+                transform: rotate(0deg) translateX(${radiusPixels}px) rotate(0deg)
+            }
+            to {
+                transform: rotate(360deg) translateX(${radiusPixels}px) rotate(-360deg);
+            }
         `;
 
-        if (props.hasOwnProperty('radius')) {
-            // Having an orbit radius implies that the planet should be moving
-            const radius = Math.floor(props.radius / 100 * Math.min(window.innerWidth, window.innerHeight) / 2);
-            // Kepler's law: https://sv.wikipedia.org/wiki/Keplers_lagar
-            const orbitPeriod = Math.floor(Math.sqrt(Math.pow(props.radius, 3) * ROTATION_CONSTANT));
-            let orbit = keyframes`
-                from {
-                    transform: rotate(0deg) translateX(${radius}px) rotate(0deg)
-                }
-                to {
-                    transform: rotate(360deg) translateX(${radius}px) rotate(-360deg);
-                }
-            `;
+        dynamicContainer = styled(dynamicContainer)`
+            position: fixed;
+            margin-top: ${-height / 2}rem; margin-left: ${-width / 2}rem;
+            top: 50%; left: 50%;
+            animation: ${orbit} ${orbitPeriod}s linear infinite;
 
-            Container = styled(Container)`
-                position: fixed;
-                margin-top: ${-props.height / 2}rem; margin-left: ${-width / 2}rem;
-                top: 50%; left: 50%;
-                animation: ${orbit} ${orbitPeriod}s linear infinite;
-                
-                &:hover {
-                    animation-play-state: paused;
-                }
+            &:hover {
+                animation-play-state: paused;
             }
-
-            `;
         }
 
-        this.state = {content: Container, ...props};
+        `;
     }
 
-    render () {
-        const Container = this.state.content;
-        return (
-            <>
-                <Tooltip id={this.state.text+"-p"} place="bottom" variant="dark"/>
-                <Container
-                    to={this.state.href} image={this.props.image}
-                    data-tooltip-id={this.state.text+"-p"} data-tooltip-content={this.state.text}
-                />
-            </>
-        );
-    }
+    return dynamicContainer;
+}
+
+export default function Planet(props: PlanetProps): JSX.Element {
+    const {text, href} = props;
+    const Container = createPlanetContainer(props);
+    const tooltipId = `${text}-p`;
+
+    return (
+        <>
+            <Tooltip id={tooltipId} place='bottom' variant='dark'/>
+            <Container
+                to={href}
+                data-tooltip-id={tooltipId}
+                data-tooltip-content={text} />
+        </>
+    );
 }

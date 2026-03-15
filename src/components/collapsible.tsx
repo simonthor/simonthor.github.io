@@ -1,40 +1,36 @@
-import React from 'react';
+import type {ReactNode} from 'react';
+import {useState} from 'react';
 import styled from 'styled-components';
 import {textColor, baseColor} from '../constants';
 
-export default class Collapsible extends React.Component {
-    constructor(props){
-        super(props);
-        const Header = styled.div`
-            cursor: pointer;
-            border: solid 1px #f2f2f2;
-            padding: 15px;
-            background-color: ${baseColor};
-            color: ${textColor};
-        `;
-        this.state = {open: false};
-        this.header = Header;
+type CollapsibleProps = {
+    title: string;
+    children?: ReactNode;
+};
 
-    }
+const Header = styled.div`
+    cursor: pointer;
+    border: solid 1px #f2f2f2;
+    padding: 15px;
+    background-color: ${baseColor};
+    color: ${textColor};
+`;
 
-    togglePanel(e){
-        this.setState({open: !this.state.open})
-    }
+export default function Collapsible({title, children}: CollapsibleProps): JSX.Element {
+    const [open, setOpen] = useState<boolean>(false);
 
-    render() {
-        return (
-            <div>
-                <this.header onClick={(e)=>this.togglePanel(e)}>
-                    {this.props.title}
-                </this.header>
-                {this.state.open ? (
-                <div className='content'>
-                    {this.props.children}
-                </div>
-                ) : null}
+    return (
+        <div>
+            <Header onClick={() => setOpen((state) => !state)}>
+                {title}
+            </Header>
+            {open ? (
+            <div className='content'>
+                {children}
             </div>
-        );
-    }
+            ) : null}
+        </div>
+    );
 }
 /*
         .header{

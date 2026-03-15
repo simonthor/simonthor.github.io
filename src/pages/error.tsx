@@ -1,7 +1,9 @@
-import React from 'react';
+import { JSX } from 'react';
 
-export default function Error (props) {
+const ErrorPage: React.FC<JSX.Element> = () => {
     return (
         <h1>404 - this page does not exist...</h1>
     );
 }
+
+export default ErrorPage;

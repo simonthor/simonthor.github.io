@@ -1,148 +1,211 @@
-import React from 'react';
-import tips from '../data/tips.json';
-import styled from 'styled-components';
+import type {ChangeEvent, JSX} from 'react';
+import {useState} from 'react';
+import styled, {css} from 'styled-components';
+import tipsData from '../data/tips.json';
 import Collapsible from '../components/collapsible';
 import {baseColor, textColor} from '../constants';
+import type {TipEntry} from '../types';
 
-export default class Tips extends React.Component {
-    constructor(props) {
-        super(props);
-        // TODO: Add expand/collapse all button
-        // TODO: improve appearance of buttons with CSS
-        const Navigator = styled.div`
-            display: grid;
-            width: 100%;
-            height: 3rem;
-            margin-bottom: 1rem;
-            grid-template-areas: 
-            "search search search search searchButton"
-            "season subject type age archive"; {/*TODO: include separate academic and age bars?*/}
-        `;
+const tips: TipEntry[] = tipsData;
 
-        const navWidgetNames = {
-            search: 'input', searchButton: 'button', season: 'select', subject: 'select',
-            type: 'select', age: 'div', archive: 'div'
-        };
+type TipsCriteria = {
+    search: string;
+    season: string;
+    subject: string;
+    type: string;
+    age?: string;
+    archive: boolean;
+};
 
-        let navWidgets = {};
-        for (const widgetName in navWidgetNames) {
-            navWidgets[widgetName] = styled(navWidgetNames[widgetName])`
-                grid-area: ${widgetName};
-                background-color: ${baseColor};
-                color: ${textColor};
-                border: white;
-            `;
-        }
+const widgetStyle = css`
+    background-color: ${baseColor};
+    color: ${textColor};
+    border: white;
+`;
 
-        this.getTips = this.getTips.bind(this);
-        this.getInputChange = (event) => {
-            if (event.target.type === 'checkbox') {
-                this.setState({[event.target.id]: event.target.checked})
-            }else {
-                this.setState({[event.target.id]: event.target.value})
-            }
-        };
+const Navigator = styled.div`
+    display: grid;
+    width: 100%;
+    height: 3rem;
+    margin-bottom: 1rem;
+    grid-template-areas:
+        "search search search search searchButton"
+        "season subject type age archive";
+`;
 
-        this.Navigator = Navigator;
-        this.navWidgets = navWidgets;
-        this.state = {search: '', season: 'season', subject: 'subject', type: 'type', age: undefined, archive: false, sortedTips: tips};
+const SearchInput = styled.input`
+    grid-area: search;
+    ${widgetStyle};
+`;
+
+const SearchButton = styled.button`
+    grid-area: searchButton;
+    ${widgetStyle};
+`;
+
+const SeasonSelect = styled.select`
+    grid-area: season;
+    ${widgetStyle};
+`;
+
+const SubjectSelect = styled.select`
+    grid-area: subject;
+    ${widgetStyle};
+`;
+
+const TypeSelect = styled.select`
+    grid-area: type;
+    ${widgetStyle};
+`;
+
+const AgeContainer = styled.div`
+    grid-area: age;
+    ${widgetStyle};
+`;
+
+const ArchiveContainer = styled.div`
+    grid-area: archive;
+    ${widgetStyle};
+`;
+
+function conditionsFullFilled(tip: TipEntry, criteria: TipsCriteria): boolean {
+    if (!(tip['season'] === criteria['season'] || criteria['season'] === 'season' || tip['season'] === 'season')) {
+        return false;
     }
-
-    static conditionsFullFilled(tip, criteria) {
-        if (!(tip['season'] === criteria['season'] || criteria['season'] === 'season' || tip['season'] === 'season')) {
-            return false;
-        }
-        else if (!(tip['type'].includes(criteria['type']) || criteria['type'] === 'type')) {
-            return false;
-        }
-        else if (!(tip['subject'] === criteria['subject'] || criteria['subject'] === 'subject' || tip['subject'] === 'STEM')) {
-            return false;
-        }
-        else if (!(!criteria['age'] || !tip['academic level'].hasOwnProperty('age') ||
-                        tip['academic level'].age.includes(parseInt(criteria['age'], 10)))) {
-            return false;
-        }
-        else if (!(tip['links'].some((link)=>(link.includes(criteria['search']))) ||
-            tip['name'].toLowerCase().includes(criteria['search'].toLowerCase()) ||
-            (tip['info'] !== null && tip['info'].toLowerCase().includes(tip['name'].toLowerCase())))) {
-            return false;
-        }
-        else return criteria['archive'] || !tip.hasOwnProperty('archive') || !tip['archive'];
+    else if (!(tip['type'].includes(criteria['type']) || criteria['type'] === 'type')) {
+        return false;
     }
-
-    getTips () {
-        const {sortedTips, ...criteria} = this.state;
-
-        let chosenTips = [];
-        tips.forEach(
-            (tip)=>{
-                if (Tips.conditionsFullFilled(tip, criteria)) {
-                    chosenTips.push(tip);
-                }
-            }
-        );
-        this.setState({sortedTips: chosenTips});
+    else if (!(tip['subject'] === criteria['subject'] || criteria['subject'] === 'subject' || tip['subject'] === 'STEM')) {
+        return false;
     }
-
-    render () {
-        const navWidgets = this.navWidgets;
-        return (
-            <>
-                <h1>Tips and Links to STEM-related Activities</h1>
-                <this.Navigator>
-                    <navWidgets.search type="text" placeholder="Enter some text..." id="search" onInput={this.getInputChange}/>
-                    <navWidgets.searchButton onClick={this.getTips}>
-                        Search
-                    </navWidgets.searchButton>
-                    <navWidgets.season id="season" onChange={this.getInputChange}>
-                        <option value="season">season</option>
-                        <option value="spring">spring</option>
-                        <option value="summer">summer</option>
-                        <option value="autumn">autumn</option>
-                        <option value="winter">winter</option>
-                    </navWidgets.season>
-                    <navWidgets.subject id="subject" onChange={this.getInputChange}>
-                        <option value="subject">subject</option>
-                        <option value="physics">physics</option>
-                        <option value="programming">programming</option>
-                        <option value="astronomy">astronomy</option>
-                        <option value="mathematics">mathematics</option>
-                        <option value="biology">biology</option>
-                        <option value="biology">biology</option>
-                    </navWidgets.subject>
-                    <navWidgets.type id="type" onChange={this.getInputChange}>
-                        <option value="type">type</option>
-                        <option value="camp">camp</option>
-                        <option value="association">association</option>
-                        <option value="competition">competition</option>
-                        <option value="research">research</option>
-                    </navWidgets.type>
-                    <navWidgets.age>
-                        <label htmlFor="age">Age:</label>
-                        <input type="number" name="age" min="5" max="30" id="age" onChange={this.getInputChange}/>
-                    </navWidgets.age>
-                    <navWidgets.archive>
-                        <input type="checkbox" name="archive" id="archive" onChange={this.getInputChange}/>
-                        <label htmlFor="archive">Include archive</label>
-                    </navWidgets.archive>
-                </this.Navigator>
-                {/*Renders all tips that has been sorted out using getTips.*/}
-                {
-                    this.state.sortedTips.length > 0 ?
-                     (this.state.sortedTips.map((tip)=>(
-                        <Collapsible title={tip.name} key={tip.name}>
-                            {tip.links.map((link)=>(<a style={{marginRight:'1rem'}} href={link} key={link}>Link</a>))}
-                            <p>{tip.info}</p>
-                        </Collapsible>
-                    ))) :
-                    <p style={{textAlign: 'center', fontSize: '1.5rem'}}>Sorry, no tips in this list matched your requirements :(</p>
-                }
-
-                <p style={{textAlign: 'center', fontSize: '0.7rem'}}>
-                    Disclaimer: While I do try to keep this site updated, the information here could still be outdated or incorrect.
-                </p>
-                <svg src="../"></svg>
-            </>
-        );
+    else if (!(!criteria['age'] || !Object.prototype.hasOwnProperty.call(tip['academic level'], 'age') ||
+                    (tip['academic level'].age?.includes(Number.parseInt(criteria['age'], 10)) ?? false))) {
+        return false;
     }
+    else if (!(tip['links'].some((link) => (link.includes(criteria['search']))) ||
+        tip['name'].toLowerCase().includes(criteria['search'].toLowerCase()) ||
+        (tip['info'] !== null && tip['info'].toLowerCase().includes(tip['name'].toLowerCase())))) {
+        return false;
+    }
+    else return criteria['archive'] || !Object.prototype.hasOwnProperty.call(tip, 'archive') || !tip['archive'];
 }
+
+const Tips: React.FC<JSX.Element> = () => {
+    // TODO: Add expand/collapse all button
+    // TODO: improve appearance of buttons with CSS
+    const [search, setSearch] = useState<string>('');
+    const [season, setSeason] = useState<string>('season');
+    const [subject, setSubject] = useState<string>('subject');
+    const [type, setType] = useState<string>('type');
+    const [age, setAge] = useState<string | undefined>(undefined);
+    const [archive, setArchive] = useState<boolean>(false);
+    const [sortedTips, setSortedTips] = useState<TipEntry[]>(tips);
+
+    const getInputChange = (event: ChangeEvent<HTMLInputElement | HTMLSelectElement>): void => {
+        switch (event.target.id) {
+            case 'search':
+                setSearch(event.target.value);
+                break;
+            case 'season':
+                setSeason(event.target.value);
+                break;
+            case 'subject':
+                setSubject(event.target.value);
+                break;
+            case 'type':
+                setType(event.target.value);
+                break;
+            case 'age':
+                if (event.target instanceof HTMLInputElement) {
+                    setAge(event.target.value || undefined);
+                }
+                break;
+            case 'archive':
+                if (event.target instanceof HTMLInputElement) {
+                    setArchive(event.target.checked);
+                }
+                break;
+            default:
+                break;
+        }
+    };
+
+    const getTips = (): void => {
+        const criteria: TipsCriteria = {
+            search,
+            season,
+            subject,
+            type,
+            age,
+            archive
+        };
+
+        const chosenTips: TipEntry[] = [];
+        tips.forEach((tip) => {
+            if (conditionsFullFilled(tip, criteria)) {
+                chosenTips.push(tip);
+            }
+        });
+        setSortedTips(chosenTips);
+    };
+
+    return (
+        <>
+            <h1>Tips and Links to STEM-related Activities</h1>
+            <Navigator>
+                <SearchInput type='text' placeholder='Enter some text...' id='search' onChange={getInputChange}/>
+                <SearchButton onClick={getTips}>
+                    Search
+                </SearchButton>
+                <SeasonSelect id='season' onChange={getInputChange}>
+                    <option value='season'>season</option>
+                    <option value='spring'>spring</option>
+                    <option value='summer'>summer</option>
+                    <option value='autumn'>autumn</option>
+                    <option value='winter'>winter</option>
+                </SeasonSelect>
+                <SubjectSelect id='subject' onChange={getInputChange}>
+                    <option value='subject'>subject</option>
+                    <option value='physics'>physics</option>
+                    <option value='programming'>programming</option>
+                    <option value='astronomy'>astronomy</option>
+                    <option value='mathematics'>mathematics</option>
+                    <option value='biology'>biology</option>
+                    <option value='biology'>biology</option>
+                </SubjectSelect>
+                <TypeSelect id='type' onChange={getInputChange}>
+                    <option value='type'>type</option>
+                    <option value='camp'>camp</option>
+                    <option value='association'>association</option>
+                    <option value='competition'>competition</option>
+                    <option value='research'>research</option>
+                </TypeSelect>
+                <AgeContainer>
+                    <label htmlFor='age'>Age:</label>
+                    <input type='number' name='age' min='5' max='30' id='age' onChange={getInputChange}/>
+                </AgeContainer>
+                <ArchiveContainer>
+                    <input type='checkbox' name='archive' id='archive' onChange={getInputChange}/>
+                    <label htmlFor='archive'>Include archive</label>
+                </ArchiveContainer>
+            </Navigator>
+            {/*Renders all tips that has been sorted out using getTips.*/}
+            {
+                sortedTips.length > 0 ?
+                 (sortedTips.map((tip) => (
+                    <Collapsible title={tip.name} key={tip.name}>
+                        {tip.links.map((link) => (<a style={{marginRight:'1rem'}} href={link} key={link}>Link</a>))}
+                        <p>{tip.info}</p>
+                    </Collapsible>
+                ))) :
+                <p style={{textAlign: 'center', fontSize: '1.5rem'}}>Sorry, no tips in this list matched your requirements :(</p>
+            }
+
+            <p style={{textAlign: 'center', fontSize: '0.7rem'}}>
+                Disclaimer: While I do try to keep this site updated, the information here could still be outdated or incorrect.
+            </p>
+        </>
+    );
+}
+
+export default Tips;
