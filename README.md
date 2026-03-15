@@ -3,10 +3,10 @@
 # simonthor.github.io
 
 ## Status
-The website is currently still in its beta stage after having switched from pure HTML, CSS and Javascript to React. However, the website can still be used and contains useful information. More updates coming soon!
+The website is currently still in its beta stage after having switched from pure HTML, CSS and Javascript to React with TypeScript. However, the website can still be used and contains useful information. More updates coming soon!
 
 ## Branches
-The main branch is `react`, which contains the React source code for the website before compilation into Javascript. The compiled code for the website is located in the `master` branch, which Github uses to automatically deploy a website. 
+The main branch is `react`, which contains the React + TypeScript source code for the website before compilation into Javascript. The compiled code for the website is located in the `master` branch, which Github uses to automatically deploy a website. 
 
 While the uncompiled code and the compiled code are usually updated to the same version, there may occasionally be a delay until the `master` branch has been updated. 
 

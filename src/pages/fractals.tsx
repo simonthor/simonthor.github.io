@@ -1,39 +1,63 @@
-import React from 'react';
-import { useState, useEffect, useRef } from 'react';
+import { useEffect, useRef, useState } from 'react';
+import type { ChangeEvent, MouseEvent, WheelEvent } from 'react';
 import { useSearchParams } from 'react-router-dom';
 
-export default function Fractals() {
-    const canvasRef = useRef(null);
-    const [loading, setLoading] = useState(true);
-    const [copySuccess, setCopySuccess] = useState(false);
+type ViewPosition = {
+    xMin: number;
+    xMax: number;
+    yMin: number;
+    yMax: number;
+};
+
+type PanPosition = {
+    x: number;
+    y: number;
+};
+
+type RGB = [number, number, number];
+
+type FractalConfig = ViewPosition & {
+    maxIterations: number;
+    resolution: number;
+    shadeStart: string;
+    shadeEnd: string;
+    setColor: string;
+    realFunction: string;
+    imagFunction: string;
+};
+
+const Fractals = () => {
+    const canvasRef = useRef<HTMLCanvasElement | null>(null);
+    const [loading, setLoading] = useState<boolean>(true);
+    const [copySuccess, setCopySuccess] = useState<boolean>(false);
 
     // Three different colors: one for the inside of the set, one for the outside, and one in-between.
     // Interpolation is done between the two last colors
-    const [shadeStart, setShadeStart] = useState('#F66151');
-    const [shadeEnd, setShadeEnd] = useState('#241F31');
-    const [setColor, setSetColor] = useState('#000000');
+    const [shadeStart, setShadeStart] = useState<string>('#F66151');
+    const [shadeEnd, setShadeEnd] = useState<string>('#241F31');
+    const [setColor, setSetColor] = useState<string>('#000000');
     
-    const [maxIterations, setMaxIterations] = useState(32);
-    const [resolution, setResolution] = useState(500);
+    const [maxIterations, setMaxIterations] = useState<number>(32);
+    const [resolution, setResolution] = useState<number>(500);
     // Add state for managing view position
-    const [viewPosition, setViewPosition] = useState({
+    const [viewPosition, setViewPosition] = useState<ViewPosition>({
         xMin: -2, xMax: 1,
         yMin: -1.5, yMax: 1.5
     });
 
     // Track mouse state for panning
-    const [isPanning, setIsPanning] = useState(false);
-    const [startPanPosition, setStartPanPosition] = useState({ x: 0, y: 0 });
+    const [isPanning, setIsPanning] = useState<boolean>(false);
+    const [startPanPosition, setStartPanPosition] = useState<PanPosition>({ x: 0, y: 0 });
     
-    const [realFunction, setRealFunction] = useState('zr*zr - zi*zi + cr');
-    const [functionError, setFunctionError] = useState('');
+    const [realFunction, setRealFunction] = useState<string>('zr*zr - zi*zi + cr');
+    const [functionError, setFunctionError] = useState<string>('');
     
-    const [imagFunction, setImagFunction] = useState('abs(2*zr*zi) + ci');
+    const [imagFunction, setImagFunction] = useState<string>('abs(2*zr*zi) + ci');
 
     const [fractalConfig, setFractalConfig] = useSearchParams();
     
     // Function to render the fractal with current view position
-    const renderFractal = () => {
+    const renderFractal = (): void => {
         const canvas = canvasRef.current;
         if (!canvas) return;
 
@@ -46,12 +70,13 @@ export default function Fractals() {
         setLoading(true);
         
         // Try to use WebGL for acceleration
-        const gl = canvas.getContext('webgl', {preserveDrawingBuffer: true}) || canvas.getContext('experimental-webgl', {preserveDrawingBuffer: true});
-        const hexToRGB = (h) => {
-            const r = parseInt(h.slice(1,3),16)/255;
-            const g = parseInt(h.slice(3,5),16)/255;
-            const b = parseInt(h.slice(5,7),16)/255;
-            return [r,g,b];
+        const gl = (canvas.getContext('webgl', {preserveDrawingBuffer: true}) ??
+            canvas.getContext('experimental-webgl', {preserveDrawingBuffer: true})) as WebGLRenderingContext | null;
+        const hexToRGB = (h: string): RGB => {
+            const r = Number.parseInt(h.slice(1, 3), 16) / 255;
+            const g = Number.parseInt(h.slice(3, 5), 16) / 255;
+            const b = Number.parseInt(h.slice(5, 7), 16) / 255;
+            return [r, g, b];
         };
 
         if (!gl) {
@@ -60,7 +85,7 @@ export default function Fractals() {
         }
 
         // Convert JS user expressions to GLSL-ish expressions
-        const toGLSL = (expr) => {
+        const toGLSL = (expr: string): string => {
             if (!expr) return '0.0';
             
             // Convert integer literals to float literals (e.g. 2 -> 2.0) so GLSL doesn't try to mix int*float
@@ -148,31 +173,39 @@ export default function Fractals() {
         `;
 
         // Compile helpers
-        const compile = (src, type) => {
+        const compile = (src: string, type: number): WebGLShader => {
             const sh = gl.createShader(type);
+            if (!sh) {
+                throw new Error('Failed to create shader');
+            }
             gl.shaderSource(sh, src);
             gl.compileShader(sh);
             if (!gl.getShaderParameter(sh, gl.COMPILE_STATUS)) {
-                const err = gl.getShaderInfoLog(sh);
+                const err = gl.getShaderInfoLog(sh) ?? 'Unknown shader compilation error';
                 gl.deleteShader(sh);
                 throw new Error(err);
             }
                 return sh;
         };
 
-        let program;
+        let program: WebGLProgram | null = null;
         try {
             const vs = compile(vsSource, gl.VERTEX_SHADER);
             const fs = compile(fsSource, gl.FRAGMENT_SHADER);
-            program = gl.createProgram();
+            const createdProgram = gl.createProgram();
+            if (!createdProgram) {
+                throw new Error('Failed to create shader program');
+            }
+            program = createdProgram;
             gl.attachShader(program, vs);
             gl.attachShader(program, fs);
             gl.linkProgram(program);
             if (!gl.getProgramParameter(program, gl.LINK_STATUS)) {
-                throw new Error(gl.getProgramInfoLog(program));
+                throw new Error(gl.getProgramInfoLog(program) ?? 'Unknown program linking error');
             }
-        } catch (e) {
-            setFunctionError('Error in shader: ' + e.message);
+        } catch (e: unknown) {
+            const message = e instanceof Error ? e.message : String(e);
+            setFunctionError('Error in shader: ' + message);
             return;
         }
         
@@ -204,7 +237,9 @@ export default function Fractals() {
             const u_yMin = gl.getUniformLocation(program, 'u_yMin');
             const u_yMax = gl.getUniformLocation(program, 'u_yMax');
             const u_maxIter = gl.getUniformLocation(program, 'u_maxIter');
-            const u_color = gl.getUniformLocation(program, 'u_color');
+            // When the fractal has the maximum iteration value, it should be shadeStart. If it has the minimum iteration value (1), it should be shadeEnd. So we want to interpolate from shadeEnd to shadeStart as iteration goes from 1 to maxIterations. This means the base color (when t=0) is shadeEnd, and we add (shadeStart - shadeEnd) * t to it.
+            const u_color_start = gl.getUniformLocation(program, 'u_color_start');
+            const u_color_end = gl.getUniformLocation(program, 'u_color_end');
 
             gl.uniform2f(u_resolution, width, height);
             gl.uniform1f(u_xMin, xMin);
@@ -214,9 +249,6 @@ export default function Fractals() {
             gl.uniform1i(u_maxIter, Math.min(maxIterations, 512));
             const rgbStart = hexToRGB(shadeStart);
             const rgbEnd = hexToRGB(shadeEnd);
-            // When the fractal has the maximum iteration value, it should be shadeStart. If it has the minimum iteration value (1), it should be shadeEnd. So we want to interpolate from shadeEnd to shadeStart as iteration goes from 1 to maxIterations. This means the base color (when t=0) is shadeEnd, and we add (shadeStart - shadeEnd) * t to it.
-            const u_color_start = gl.getUniformLocation(program, 'u_color_start');
-            const u_color_end = gl.getUniformLocation(program, 'u_color_end');
             gl.uniform3f(u_color_start, rgbStart[0], rgbStart[1], rgbStart[2]);
             gl.uniform3f(u_color_end, rgbEnd[0], rgbEnd[1], rgbEnd[2]);
 
@@ -233,38 +265,53 @@ export default function Fractals() {
     // This avoids crashing the browser when the states are updated too frequently, because the URL cannot update infinitely fast in most browsers. 
     // It also allows users to change multiple parameters (e.g. pan and zoom) without filling their URL history with intermediate states.
     useEffect(() => {
-        const timer = setTimeout(() => {
-            setFractalConfig({
-                xMin: viewPosition.xMin,
-                xMax: viewPosition.xMax,
-                yMin: viewPosition.yMin,
-                yMax: viewPosition.yMax,
-                maxIterations,
-                resolution,
+        const timer = window.setTimeout(() => {
+            const nextConfig: Record<string, string> = {
+                xMin: String(viewPosition.xMin),
+                xMax: String(viewPosition.xMax),
+                yMin: String(viewPosition.yMin),
+                yMax: String(viewPosition.yMax),
+                maxIterations: String(maxIterations),
+                resolution: String(resolution),
                 shadeStart,
                 shadeEnd,
                 setColor,
                 realFunction,
                 imagFunction
-            }, { replace: true });
+            };
+            setFractalConfig(nextConfig, { replace: true });
         }, 500);
         return () => clearTimeout(timer);
     }, [viewPosition, maxIterations, resolution, realFunction, imagFunction, shadeStart, shadeEnd, setColor]);
 
     // Set parameters from URL on initial load
     useEffect(() => {
-        const config = {
-            xMin: parseFloat(fractalConfig.get('xMin')) || -2,
-            xMax: parseFloat(fractalConfig.get('xMax')) || 1,
-            yMin: parseFloat(fractalConfig.get('yMin')) || -1.5,
-            yMax: parseFloat(fractalConfig.get('yMax')) || 1.5,
-            maxIterations: parseInt(fractalConfig.get('maxIterations')) || 32,
-            resolution: parseInt(fractalConfig.get('resolution')) || 500,
-            shadeStart: fractalConfig.get('shadeStart') || '#F66151',
-            shadeEnd: fractalConfig.get('shadeEnd') || '#241F31',
-            setColor: fractalConfig.get('setColor') || '#000000',
-            realFunction: fractalConfig.get('realFunction') || 'zr*zr - zi*zi + cr',
-            imagFunction: fractalConfig.get('imagFunction') || 'abs(2*zr*zi) + ci'
+        const parseFloatParam = (key: string, fallback: number): number => {
+            const value = fractalConfig.get(key);
+            if (value === null) return fallback;
+            const parsed = Number.parseFloat(value);
+            return Number.isFinite(parsed) ? parsed : fallback;
+        };
+
+        const parseIntParam = (key: string, fallback: number): number => {
+            const value = fractalConfig.get(key);
+            if (value === null) return fallback;
+            const parsed = Number.parseInt(value, 10);
+            return Number.isFinite(parsed) ? parsed : fallback;
+        };
+
+        const config: FractalConfig = {
+            xMin: parseFloatParam('xMin', -2),
+            xMax: parseFloatParam('xMax', 1),
+            yMin: parseFloatParam('yMin', -1.5),
+            yMax: parseFloatParam('yMax', 1.5),
+            maxIterations: parseIntParam('maxIterations', 32),
+            resolution: parseIntParam('resolution', 500),
+            shadeStart: fractalConfig.get('shadeStart') ?? '#F66151',
+            shadeEnd: fractalConfig.get('shadeEnd') ?? '#241F31',
+            setColor: fractalConfig.get('setColor') ?? '#000000',
+            realFunction: fractalConfig.get('realFunction') ?? 'zr*zr - zi*zi + cr',
+            imagFunction: fractalConfig.get('imagFunction') ?? 'abs(2*zr*zi) + ci'
         };
         setViewPosition({
             xMin: config.xMin,
@@ -288,12 +335,12 @@ export default function Fractals() {
 
 
     // Handle mouse events for panning
-    const handleMouseDown = (e) => {
+    const handleMouseDown = (e: MouseEvent<HTMLCanvasElement>): void => {
         setIsPanning(true);
         setStartPanPosition({ x: e.clientX, y: e.clientY });
     };
 
-    const handleMouseMove = (e) => {
+    const handleMouseMove = (e: MouseEvent<HTMLCanvasElement>): void => {
         if (!isPanning) return;
         
         const canvas = canvasRef.current;
@@ -324,16 +371,16 @@ export default function Fractals() {
         setStartPanPosition({ x: e.clientX, y: e.clientY });
     };
 
-    const handleMouseUp = () => {
+    const handleMouseUp = (): void => {
         setIsPanning(false);
     };
 
-    const handleMouseLeave = () => {
+    const handleMouseLeave = (): void => {
         setIsPanning(false);
     };
 
     // Handle mouse wheel for zooming
-    const handleWheel = (e) => {
+    const handleWheel = (e: WheelEvent<HTMLCanvasElement>): void => {
         e.preventDefault();
         
         const canvas = canvasRef.current;
@@ -368,11 +415,11 @@ export default function Fractals() {
         });
     };
 
-    const copyLink = () => {
+    const copyLink = (): void => {
         navigator.clipboard.writeText(window.location.href);
         // Render a temporary "copied!" message for 1 second
         setCopySuccess(true);
-        setTimeout(() => setCopySuccess(false), 1000);
+        window.setTimeout(() => setCopySuccess(false), 1000);
     };
 
     return (
@@ -382,17 +429,17 @@ export default function Fractals() {
                 <div className="fractal-controls" style={{ flex: '0 0 40%', marginRight: '20px', fontSize: '1.5em' }}>
                     <h2>Controls</h2>
                     <label htmlFor="resolution">Resolution: {resolution}x{resolution}</label><br/>
-                    <input type="range" id="resolution" name="resolution" min="100" max="3000" step="50" style={{width: "100%"}} value={resolution} onChange={(e) => setResolution(parseInt(e.target.value))}/>
+                    <input type="range" id="resolution" name="resolution" min="100" max="3000" step="50" style={{width: "100%"}} value={resolution} onChange={(e: ChangeEvent<HTMLInputElement>) => setResolution(Number.parseInt(e.target.value, 10))}/>
                     <br/>
                     <label htmlFor="iterations">Number of colors: {maxIterations}</label><br/>
-                    <input type="range" id="iterations" name="iterations" min="1" max="512" style={{width: "100%"}} value={maxIterations} onChange={(e) => setMaxIterations(parseInt(e.target.value))}/>
+                    <input type="range" id="iterations" name="iterations" min="1" max="512" style={{width: "100%"}} value={maxIterations} onChange={(e: ChangeEvent<HTMLInputElement>) => setMaxIterations(Number.parseInt(e.target.value, 10))}/>
                     <br/>
                     <label htmlFor="realFunction">z<sub>i+1</sub>= </label>
                     <input 
                         type="text" 
                         id="realFunction" 
                         value={realFunction}
-                        onChange={(e) => {
+                        onChange={(e: ChangeEvent<HTMLInputElement>) => {
                             setRealFunction(e.target.value);
                             setFunctionError('');
                         }}
@@ -404,7 +451,7 @@ export default function Fractals() {
                         type="text" 
                         id="imagFunction" 
                         value={imagFunction}
-                        onChange={(e) => {
+                        onChange={(e: ChangeEvent<HTMLInputElement>) => {
                             setImagFunction(e.target.value);
                             setFunctionError('');
                         }}
@@ -414,28 +461,28 @@ export default function Fractals() {
                     <br/>
                     {functionError && <p style={{ color: 'red' }}>{functionError}</p>}
                     <label htmlFor="shadeStart">Shade: </label>
-                    <input type="color" id="shadeStart" name="shadeStart" value={shadeStart} onChange={(e) => {setShadeStart(e.target.value);}}/>
+                    <input type="color" id="shadeStart" name="shadeStart" value={shadeStart} onChange={(e: ChangeEvent<HTMLInputElement>) => {setShadeStart(e.target.value);}}/>
                     
                     <span style={{ margin: '0 1em' }}></span>
                     
                     <label htmlFor="shadeEnd"> Outer color: </label>
-                    <input type="color" id="shadeEnd" name="shadeEnd" value={shadeEnd} onChange={(e) => {setShadeEnd(e.target.value);}}/>
+                    <input type="color" id="shadeEnd" name="shadeEnd" value={shadeEnd} onChange={(e: ChangeEvent<HTMLInputElement>) => {setShadeEnd(e.target.value);}}/>
                     
                     <span style={{ margin: '0 1em' }}></span>
                     
                     <label htmlFor="setColor">Inner color: </label>
-                    <input type="color" id="setColor" name="setColor" value={setColor} onChange={(e) => {setSetColor(e.target.value);}}/>
+                    <input type="color" id="setColor" name="setColor" value={setColor} onChange={(e: ChangeEvent<HTMLInputElement>) => {setSetColor(e.target.value);}}/>
                     <p>Click and drag to pan, scroll to zoom</p>
 
                     {(() => {
                         const rangeX = viewPosition.xMax - viewPosition.xMin;
                         const rangeY = viewPosition.yMax - viewPosition.yMin;
-                        const calcPrecision = (range) => {
+                        const calcPrecision = (range: number): number => {
                             // base of 4 significant digits (first non-zero + 3 digits), increase when zoomed in
                             const safeRange = Math.abs(range) > 0 ? Math.abs(range) : 1;
                             return Math.max(4, Math.ceil(-Math.log10(safeRange)) + 1);
                         };
-                        const format = (v, range) => {
+                        const format = (v: number, range: number): string => {
                             const p = calcPrecision(range);
                             try { return Number(v).toPrecision(p); } catch { return String(v); }
                         };
@@ -471,3 +518,5 @@ export default function Fractals() {
         </div>
     );
 }
+
+export default Fractals;

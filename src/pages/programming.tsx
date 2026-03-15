@@ -1,17 +1,20 @@
-import React from 'react';
 import {Link} from 'react-router-dom';
 //import styled from 'styled-components';
 
-function Repo(props) {
+type RepoProps = {
+    href: string;
+};
+
+const Repo = (props: RepoProps) => {
     // TODO: make this look better
     return (
         <a href={props.href}>
             code
         </a>
-    )
+    );
 }
 
-export default function Programming() {
+const Programming = () => {
 
     return (
         <>
@@ -91,3 +94,5 @@ export default function Programming() {
         </>
     );
 }
+
+export default Programming;

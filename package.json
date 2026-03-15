@@ -14,12 +14,17 @@
     "styled-components": "^6.3.11"
   },
   "devDependencies": {
+    "@types/node": "^25.5.0",
+    "@types/react": "^19.2.14",
+    "@types/react-dom": "^19.2.3",
     "@vitejs/plugin-react": "^5.1.4",
+    "typescript": "^5.9.3",
     "vite": "^7.3.1",
     "vite-plugin-dynamic-import": "^1.6.0"
   },
   "scripts": {
     "dev": "vite",
+    "typecheck": "tsc --noEmit",
     "build": "vite build && cp dist/index.html dist/404.html",
     "preview": "vite preview"
   },
