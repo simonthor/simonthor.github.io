@@ -1,5 +1,5 @@
 import type {ChangeEvent} from 'react';
-import {useState} from 'react';
+import {useMemo, useState} from 'react';
 import styled, {css} from 'styled-components';
 import tipsData from '../data/tips.json';
 import Collapsible from '../components/collapsible';
@@ -29,17 +29,12 @@ const Navigator = styled.div`
     height: 3rem;
     margin-bottom: 1rem;
     grid-template-areas:
-        "search search search search searchButton"
+        "search search search search search"
         "season subject type age archive";
 `;
 
 const SearchInput = styled.input`
     grid-area: search;
-    ${widgetStyle};
-`;
-
-const SearchButton = styled.button`
-    grid-area: searchButton;
     ${widgetStyle};
 `;
 
@@ -99,7 +94,6 @@ const Tips = () => {
     const [type, setType] = useState<string>('type');
     const [age, setAge] = useState<string | undefined>(undefined);
     const [archive, setArchive] = useState<boolean>(false);
-    const [sortedTips, setSortedTips] = useState<TipEntry[]>(tips);
 
     const getInputChange = (event: ChangeEvent<HTMLInputElement | HTMLSelectElement>): void => {
         switch (event.target.id) {
@@ -130,7 +124,7 @@ const Tips = () => {
         }
     };
 
-    const getTips = (): void => {
+    const sortedTips = useMemo<TipEntry[]>(() => {
         const criteria: TipsCriteria = {
             search,
             season,
@@ -140,23 +134,14 @@ const Tips = () => {
             archive
         };
 
-        const chosenTips: TipEntry[] = [];
-        tips.forEach((tip) => {
-            if (conditionsFullFilled(tip, criteria)) {
-                chosenTips.push(tip);
-            }
-        });
-        setSortedTips(chosenTips);
-    };
+        return tips.filter((tip) => conditionsFullFilled(tip, criteria));
+    }, [search, season, subject, type, age, archive]);
 
     return (
         <>
             <h1>Tips and Links to STEM-related Activities</h1>
             <Navigator>
                 <SearchInput type='text' placeholder='Enter some text...' id='search' onChange={getInputChange}/>
-                <SearchButton onClick={getTips}>
-                    Search
-                </SearchButton>
                 <SeasonSelect id='season' onChange={getInputChange}>
                     <option value='season'>season</option>
                     <option value='spring'>spring</option>
@@ -170,7 +155,6 @@ const Tips = () => {
                     <option value='programming'>programming</option>
                     <option value='astronomy'>astronomy</option>
                     <option value='mathematics'>mathematics</option>
-                    <option value='biology'>biology</option>
                     <option value='biology'>biology</option>
                 </SubjectSelect>
                 <TypeSelect id='type' onChange={getInputChange}>
