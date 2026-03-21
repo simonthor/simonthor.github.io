@@ -1,4 +1,4 @@
-[![framework: React](https://img.shields.io/badge/framework-React-darkblue.svg)](https://github.com/facebook/react) [![style: styled-components](https://img.shields.io/badge/style-%F0%9F%92%85%20styled--components-orange.svg?colorB=daa357&colorA=db748e)](https://github.com/styled-components/styled-components) 
+[![framework: React](https://img.shields.io/badge/framework-React-darkblue.svg)](https://github.com/facebook/react) [![style: styled-components](https://img.shields.io/badge/style-%F0%9F%92%85%20styled--components-orange.svg?colorB=daa357&colorA=db748e)](https://github.com/styled-components/styled-components) [language: typescript](https://img.shields.io/badge/language-TypeScript-blue.svg)
 
 # simonthor.github.io
 My personal website, containing information about me, my research, and my projects. There are also some fun side-projects that you can check out, such as a [fractal explorer](https://simonthor.github.io/fractals).
