@@ -1,10 +1,18 @@
 import { useEffect } from 'react';
 import {Link} from 'react-router-dom';
 
+declare global {
+    interface Window {
+        MathJax?: {
+            typeset: () => void;
+        };
+    }
+}
+
 const About = () => {
     useEffect(()=>{
-        if(typeof window?.MathJax !== "undefined"){
-        window.MathJax.typeset()
+        if (typeof window !== "undefined" && window.MathJax) {
+            window.MathJax.typeset();
         }
     },[])
     const FASERnu = String.raw`FASER\(\nu\)`;
