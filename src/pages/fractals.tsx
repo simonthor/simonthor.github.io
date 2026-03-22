@@ -78,7 +78,7 @@ const Fractals = () => {
         // }
 
         // Then replace the current node
-        if (node.isOperatorNode && node.isBinary()) {
+        if (node.type === 'OperatorNode') {
             const n = node as math.OperatorNode;
             switch (n.op) {
             case '+': return new math.FunctionNode('cx_add', n.args);
@@ -92,7 +92,7 @@ const Fractals = () => {
             }
         }
 
-        if (node.isFunctionNode) {
+        if (node.type === 'FunctionNode') {
             const n = node as math.FunctionNode;
             switch (n.fn.name ?? n.fn) {
             case 'pow':    return new math.FunctionNode('cx_pow',     n.args);
