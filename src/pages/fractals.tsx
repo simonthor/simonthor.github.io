@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
 import type { ChangeEvent, MouseEvent, WheelEvent } from 'react';
 import { useSearchParams } from 'react-router-dom';
+import { create, all } from 'mathjs';
 
 type ViewPosition = {
     xMin: number;
@@ -22,8 +23,8 @@ type FractalConfig = ViewPosition & {
     shadeStart: string;
     shadeEnd: string;
     setColor: string;
-    realFunction: string;
-    imagFunction: string;
+    Function: string;
+    // imagFunction: string;
 };
 
 const Fractals = () => {
@@ -49,13 +50,94 @@ const Fractals = () => {
     const [isPanning, setIsPanning] = useState<boolean>(false);
     const [startPanPosition, setStartPanPosition] = useState<PanPosition>({ x: 0, y: 0 });
     
-    const [realFunction, setRealFunction] = useState<string>('zr*zr - zi*zi + cr');
+    const [Function, setFunction] = useState<string>('z^2 + c');
+    const [localFunction, setLocalFunction] = useState<string>('z^2 + c');
     const [functionError, setFunctionError] = useState<string>('');
+    const [Expr, setExpr] = useState<string>('');
     
-    const [imagFunction, setImagFunction] = useState<string>('abs(2*zr*zi) + ci');
+    // const [imagFunction, setImagFunction] = useState<string>('abs(2*zr*zi) + ci');
 
     const [fractalConfig, setFractalConfig] = useSearchParams();
     
+    const math = create(all);
+    // Define your custom multiplication function
+
+    const transformNode = (node: math.MathNode): math.MathNode => {
+        // First, recursively transform all children
+        if ('args' in node && Array.isArray((node as any).args)) {
+            (node as any).args = (node as any).args.map(transformNode);
+        }
+
+        // Convert integer constants to floats for GLSL compatibility
+        // This does not work because floats are automatically converted to ints in mathjs when possible
+        // if (node.isConstantNode) {
+        //     const n = node as math.ConstantNode;
+        //     if (Number.isInteger(n.value)) {
+        //         return new math.ConstantNode(parseFloat(String(parseFloat(n.value)) + '.0'));
+        //     }
+        // }
+
+        // Then replace the current node
+        if (node.isOperatorNode && node.isBinary()) {
+            const n = node as math.OperatorNode;
+            switch (n.op) {
+            case '+': return new math.FunctionNode('cx_add', n.args);
+            case '-': return new math.FunctionNode('cx_sub', n.args);
+            case '*': return new math.FunctionNode('cx_mul', n.args);
+            case '/': return new math.FunctionNode('cx_div', n.args);
+            case '^': return new math.FunctionNode('cx_pow', n.args);
+            default:
+                console.log("Unsupported operator", n.op);
+                return node;
+            }
+        }
+
+        if (node.isFunctionNode) {
+            const n = node as math.FunctionNode;
+            switch (n.fn.name ?? n.fn) {
+            case 'pow':    return new math.FunctionNode('cx_pow',     n.args);
+            case 'sin':    return new math.FunctionNode('cx_sin',     n.args);
+            case 'cos':    return new math.FunctionNode('cx_cos',     n.args);
+            case 'tan':    return new math.FunctionNode('cx_tan',     n.args);
+            case 'log':    return new math.FunctionNode('cx_log',     n.args);
+            case 'sqrt':   return new math.FunctionNode('cx_sqrt',    n.args);
+            case 'conj':   return new math.FunctionNode('cx_conj',    n.args);
+            case 'arg':    return new math.FunctionNode('cx_arg',     n.args);
+            default:
+                console.log("Unsupported function", n.fn);
+                return node;
+            }
+        }
+
+        return node;
+    }
+    
+    // Parse and transform the function expression in an effect to avoid render-phase state updates
+    useEffect(() => {
+        try {
+            const node = math.parse(Function);
+            const transformed = transformNode(node);
+            // Replace constant integers with float versions, i.e. append .0 to them, so they work in GLSL without type errors.
+            // const expr = transformed.toString().replace(/(\b\d+)(?!\.)\b/g, '$1.0');
+            const expr = transformed.toString().replace(/(?<!\.)\b(\d+)\b(?!\.)/g, '$1.0');
+            console.log(expr);
+            setExpr(expr);
+            setFunctionError('');
+        } catch (e: unknown) {
+            const message = e instanceof Error ? e.message : String(e);
+            setFunctionError('Error parsing function: ' + message);
+            setExpr('');
+        }
+    }, [Function]);
+
+    // Debounce function input updates — only update Function state every 500ms
+    useEffect(() => {
+        const timer = window.setTimeout(() => {
+            setFunction(localFunction);
+        }, 500);
+        return () => clearTimeout(timer);
+    }, [localFunction]);
+
     // Function to render the fractal with current view position
     const renderFractal = (): void => {
         const canvas = canvasRef.current;
@@ -85,20 +167,20 @@ const Fractals = () => {
         }
 
         // Convert JS user expressions to GLSL-ish expressions
-        const toGLSL = (expr: string): string => {
-            if (!expr) return '0.0';
+        // const toGLSL = (expr: string): string => {
+        //     if (!expr) return '0.0';
             
-            // Convert integer literals to float literals (e.g. 2 -> 2.0) so GLSL doesn't try to mix int*float
-            // Note: this targets standalone integer tokens and avoids touching things like property names.
-            let s = expr.replace(/(\b\d+)(?!\.)\b/g, '$1.0');
+        //     // Convert integer literals to float literals (e.g. 2 -> 2.0) so GLSL doesn't try to mix int*float
+        //     // Note: this targets standalone integer tokens and avoids touching things like property names.
+        //     let s = expr.replace(/(\b\d+)(?!\.)\b/g, '$1.0');
             
-            // Replace power operator a ^ b with pow(a,b) (simple heuristic)
-            s = s.replace(/([0-9A-Za-z_\)\.\]\}]+)\s*\^\s*([0-9A-Za-z_\(\.\[\{]+)/g, 'pow($1,$2)');
+        //     // Replace power operator a ^ b with pow(a,b) (simple heuristic)
+        //     s = s.replace(/([0-9A-Za-z_\)\.\]\}]+)\s*\^\s*([0-9A-Za-z_\(\.\[\{]+)/g, 'pow($1,$2)');
 
-            return s;
-        };
-        const realExpr = toGLSL(realFunction);
-        const imagExpr = toGLSL(imagFunction);
+        //     return s;
+        // };
+        // const realExpr = toGLSL(realFunction);
+        // const imagExpr = toGLSL(imagFunction);
 
         // Basic passthrough vertex shader
         const vsSource = `
@@ -116,6 +198,7 @@ const Fractals = () => {
         const fsSource = `
         // Use high precision for better zoom levels
         precision highp float;
+
         varying vec2 v_uv;
         uniform vec2 u_resolution;
         uniform float u_xMin;
@@ -127,7 +210,50 @@ const Fractals = () => {
         uniform vec3 u_color_end;
 
         // user-provided expressions will use zr, zi, cr, ci
-        float sqr(float x){ return x*x; }
+        #define sqr(a) (a.x*a.x + a.y*a.y)
+        #define PI 3.14159265
+
+        // Functions copied from https://github.com/julesb/glsl-util/blob/master/complexvisual.glsl
+        #define cx_add(a, b) vec2(a.x + b.x, a.y + b.y)
+        #define cx_sub(a, b) vec2(a.x - b.x, a.y - b.y)
+        #define cx_mul(a, b) vec2(a.x*b.x-a.y*b.y, a.x*b.y+a.y*b.x)
+        #define cx_div(a, b) vec2(((a.x*b.x+a.y*b.y)/(b.x*b.x+b.y*b.y)),((a.y*b.x-a.x*b.y)/(b.x*b.x+b.y*b.y)))
+        #define cx_modulus(a) length(a)
+        #define cx_conj(a) vec2(a.x,-a.y)
+        // #define cx_arg(a) atan2(a.y,a.x)
+        // #define cx_sin(a) vec2(sin(a.x) * cosh(a.y), cos(a.x) * sinh(a.y))
+        // #define cx_cos(a) vec2(cos(a.x) * cosh(a.y), -sin(a.x) * sinh(a.y))
+        #define Re(a) vec2(a.x, 0.0)
+        #define Im(a) vec2(0.0, a.y)
+
+        vec2 cx_to_polar(vec2 a) {
+            float phi = atan(a.y, a.x);
+            float r = sqrt(sqr(a));
+            return vec2(r, phi);
+        }
+
+        vec2 cx_sqrt(vec2 a) {
+            float r = sqrt(sqr(a));
+            float rpart = sqrt(0.5*(r+a.x));
+            float ipart = sqrt(0.5*(r-a.x));
+            if (a.y < 0.0) ipart = -ipart;
+            return vec2(rpart,ipart);
+        }
+        
+        vec2 cx_pow(vec2 v, float p) {
+            vec2 z = cx_to_polar(v);
+            return pow(z.x, p) * vec2(cos(z.y * p), sin(z.y * p));
+        }
+        
+        // vec2 cx_tan(vec2 a) {return cx_div(cx_sin(a), cx_cos(a)); }
+
+        // vec2 cx_log(vec2 a) {
+        //     float rpart = sqrt((a.x*a.x)+(a.y*a.y));
+        //     float ipart = atan2(a.y,a.x);
+        //     if (ipart > PI) ipart=ipart-(2.0*PI);
+        //     return vec2(log(rpart),ipart);
+        // }
+        vec2 i = vec2(0.0, 1.0); // imaginary unit
 
         void main() {
             vec2 frag = v_uv * u_resolution;
@@ -135,29 +261,26 @@ const Fractals = () => {
             float y = frag.y;
             float cr = u_xMin + (x / u_resolution.x) * (u_xMax - u_xMin);
             float ci = u_yMin + (y / u_resolution.y) * (u_yMax - u_yMin);
+            vec2 c = vec2(cr, ci);
 
-            float zr = 0.0;
-            float zi = 0.0;
+            vec2 z = vec2(0.0, 0.0);
             int iter = 0;
             
             // GLSL requires constant loop bound; set safely above typical max
             const int MAX_LOOP = 512;
-            for (int i = 0; i < MAX_LOOP; i++) {
-                if (i >= u_maxIter) break;
+            for (int i_iter = 0; i_iter < MAX_LOOP; i_iter++) {
+                if (i_iter >= u_maxIter) break;
 
-                // Injected user expressions (must use zr,zi,cr,ci and GLSL functions)
-                float newZr = ${realExpr};
-                float newZi = ${imagExpr};
+                // Injected user expressions (must use z,c and the supported operators and functions)
+                z = ${Expr};
 
-                zr = newZr;
-                zi = newZi;
-
-                if (sqr(zr) + sqr(zi) > 4.0) {
-                    iter = i + 1;
+                if (sqr(z) > 4.0) {
+                    iter = i_iter + 1;
                     break;
                 }
+
                 // if we reach the max provided iter without escape, mark as inside
-                if (i == u_maxIter - 1) {
+                if (i_iter == u_maxIter - 1) {
                     iter = u_maxIter;
                 }
             }
@@ -276,13 +399,12 @@ const Fractals = () => {
                 shadeStart,
                 shadeEnd,
                 setColor,
-                realFunction,
-                imagFunction
+                Function: localFunction
             };
             setFractalConfig(nextConfig, { replace: true });
         }, 500);
         return () => clearTimeout(timer);
-    }, [viewPosition, maxIterations, resolution, realFunction, imagFunction, shadeStart, shadeEnd, setColor]);
+    }, [viewPosition, maxIterations, resolution, localFunction, shadeStart, shadeEnd, setColor]);
 
     // Set parameters from URL on initial load
     useEffect(() => {
@@ -310,8 +432,8 @@ const Fractals = () => {
             shadeStart: fractalConfig.get('shadeStart') ?? '#F66151',
             shadeEnd: fractalConfig.get('shadeEnd') ?? '#241F31',
             setColor: fractalConfig.get('setColor') ?? '#000000',
-            realFunction: fractalConfig.get('realFunction') ?? 'zr*zr - zi*zi + cr',
-            imagFunction: fractalConfig.get('imagFunction') ?? 'abs(2*zr*zi) + ci'
+            Function: fractalConfig.get('Function') ?? 'z^2 + c',
+            // imagFunction: fractalConfig.get('imagFunction') ?? 'abs(2*zr*zi) + ci'
         };
         setViewPosition({
             xMin: config.xMin,
@@ -324,14 +446,15 @@ const Fractals = () => {
         setShadeStart(config.shadeStart);
         setShadeEnd(config.shadeEnd);
         setSetColor(config.setColor);
-        setRealFunction(config.realFunction);
-        setImagFunction(config.imagFunction);
+        setFunction(config.Function);
+        setLocalFunction(config.Function);
+        // setImagFunction(config.imagFunction);
     }, []);
 
     // Initial render
     useEffect(() => {
         renderFractal();
-    }, [viewPosition, maxIterations, resolution, realFunction, imagFunction, shadeStart, shadeEnd, setColor]);
+    }, [viewPosition, maxIterations, resolution, Expr, shadeStart, shadeEnd, setColor]);
 
 
     // Handle mouse events for panning
@@ -434,30 +557,18 @@ const Fractals = () => {
                     <label htmlFor="iterations">Number of colors: {maxIterations}</label><br/>
                     <input type="range" id="iterations" name="iterations" min="1" max="512" style={{width: "100%"}} value={maxIterations} onChange={(e: ChangeEvent<HTMLInputElement>) => setMaxIterations(Number.parseInt(e.target.value, 10))}/>
                     <br/>
-                    <label htmlFor="realFunction">z<sub>i+1</sub>= </label>
+                    <label htmlFor="Function">z<sub>i+1</sub>= </label>
                     <input 
                         type="text" 
-                        id="realFunction" 
-                        value={realFunction}
+                        id="Function" 
+                        value={localFunction}
                         onChange={(e: ChangeEvent<HTMLInputElement>) => {
-                            setRealFunction(e.target.value);
+                            setLocalFunction(e.target.value);
                             setFunctionError('');
                         }}
                         placeholder="e.g., zr^2 - zi^2 + cr"
                         style={{ width: '40%', marginBottom: '10px', fontSize: '1em' }}
                     />
-                    <label htmlFor="imagFunction"> + i</label>
-                    <input 
-                        type="text" 
-                        id="imagFunction" 
-                        value={imagFunction}
-                        onChange={(e: ChangeEvent<HTMLInputElement>) => {
-                            setImagFunction(e.target.value);
-                            setFunctionError('');
-                        }}
-                        placeholder="e.g., abs(2*zr*zi) + ci"
-                        style={{ width: '40%', marginBottom: '10px', fontSize: '1em' }}
-                        />
                     <br/>
                     {functionError && <p style={{ color: 'red' }}>{functionError}</p>}
                     <label htmlFor="shadeStart">Shade: </label>
