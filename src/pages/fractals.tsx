@@ -118,7 +118,6 @@ const Fractals = () => {
             const node = math.parse(Function);
             const transformed = transformNode(node);
             // Replace constant integers with float versions, i.e. append .0 to them, so they work in GLSL without type errors.
-            // const expr = transformed.toString().replace(/(\b\d+)(?!\.)\b/g, '$1.0');
             const expr = transformed.toString().replace(/(?<!\.)\b(\d+)\b(?!\.)/g, '$1.0');
             console.log(expr);
             setExpr(expr);
