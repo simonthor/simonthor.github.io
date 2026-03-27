@@ -55,8 +55,6 @@ const Fractals = () => {
     const [functionError, setFunctionError] = useState<string>('');
     const [Expr, setExpr] = useState<string>('');
     
-    // const [imagFunction, setImagFunction] = useState<string>('abs(2*zr*zi) + ci');
-
     const [fractalConfig, setFractalConfig] = useSearchParams();
     
     const math = create(all);
@@ -208,7 +206,6 @@ const Fractals = () => {
         uniform vec3 u_color_start;
         uniform vec3 u_color_end;
 
-        // user-provided expressions will use zr, zi, cr, ci
         #define sqr(a) (a.x*a.x + a.y*a.y)
         #define PI 3.14159265
 
@@ -432,7 +429,6 @@ const Fractals = () => {
             shadeEnd: fractalConfig.get('shadeEnd') ?? '#241F31',
             setColor: fractalConfig.get('setColor') ?? '#000000',
             Function: fractalConfig.get('Function') ?? 'z^2 + c',
-            // imagFunction: fractalConfig.get('imagFunction') ?? 'abs(2*zr*zi) + ci'
         };
         setViewPosition({
             xMin: config.xMin,
@@ -565,7 +561,7 @@ const Fractals = () => {
                             setLocalFunction(e.target.value);
                             setFunctionError('');
                         }}
-                        placeholder="e.g., zr^2 - zi^2 + cr"
+                        placeholder="e.g., z^2 + c"
                         style={{ width: '40%', marginBottom: '10px', fontSize: '1em' }}
                     />
                     <br/>
@@ -611,7 +607,7 @@ const Fractals = () => {
                 <div className="fractal-section" style={{ flex: 1 }}>
                     <h2>Viewer</h2>
                     {/* If the fractal is not rendering, it is probably because it is written incorrectly */}
-                    {loading && <p>Invalid recusive function. Only zr, zi, cr, ci, GLSL syntax and ^ are allowed</p>}
+                    {loading && <p>Invalid recusive function. Only z, c, GLSL syntax and ^ are allowed</p>}
                     <canvas 
                         ref={canvasRef} 
                         width={resolution} 
