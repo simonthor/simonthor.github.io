@@ -10,6 +10,7 @@ import SolarSystem from './pages/solar-system';
 import Header from './header';
 import Footer from './footer';
 import Page from './components/page';
+import SecretPage from './pages/secret-page';
 
 type PagePath = {
     path: string;
@@ -43,6 +44,8 @@ const App = () => {
                                       image={pathInfo.image}/>} />
                         )
                     )}
+                    <Route path='/14619316852710'
+                        element={<SecretPage />} />
                     <Route path='/'
                         element={<SolarSystem/>} />
                     <Route path='*'
