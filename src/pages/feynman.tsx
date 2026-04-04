@@ -330,9 +330,9 @@ const FeynmanDiagram = () => {
         const dx = edge.end.x - edge.start.x;
         const dy = edge.end.y - edge.start.y;
         const distance = Math.sqrt(dx * dx + dy * dy);
-        const radius = 6; // Radius of the spiral coils
-        const coilSpacing = 15; // Distance between coil centers
-        const numCoils = Math.floor(distance / coilSpacing);
+        const loopRadius = 5; // Radius of each circular loop
+        const loopSpacing = 12; // Distance between loop centers along the line
+        const numLoops = Math.max(1, Math.floor(distance / loopSpacing));
         
         // Unit vector along the line
         const ux = dx / distance;
@@ -344,28 +344,54 @@ const FeynmanDiagram = () => {
 
         ctx.beginPath();
         
-        // Draw spiral as series of circles
-        for (let coil = 0; coil < numCoils; coil++) {
-            const centerT = (coil + 0.5) / numCoils;
-            const centerX = edge.start.x + dx * centerT;
-            const centerY = edge.start.y + dy * centerT;
+        // Draw spiral as series of circular loops
+        for (let i = 0; i < numLoops; i++) {
+            const t = (i + 0.5) / numLoops;
+            const centerX = edge.start.x + dx * t;
+            const centerY = edge.start.y + dy * t;
             
-            // Draw circular coil
-            for (let angle = 0; angle <= Math.PI * 2; angle += Math.PI / 8) {
-                const spiralX = centerX + perpX * radius * Math.cos(angle);
-                const spiralY = centerY + perpY * radius * Math.cos(angle);
-                const spiralZ = radius * Math.sin(angle);
-                
-                // Project 3D spiral onto 2D (along line direction for depth)
-                const projX = spiralX + ux * spiralZ * 0.3;
-                const projY = spiralY + uy * spiralZ * 0.3;
-                
-                if (coil === 0 && angle === 0) {
-                    ctx.moveTo(projX, projY);
-                } else {
-                    ctx.lineTo(projX, projY);
-                }
+            // Draw a circular loop using bezier curves
+            // A circle can be approximated with 4 bezier curves
+            const kappa = 0.5522847498; // Control point distance for circle approximation
+            const r = loopRadius;
+            
+            // Starting point (top of circle, relative to perpendicular direction)
+            const startX = centerX + perpX * r;
+            const startY = centerY + perpY * r;
+            
+            if (i === 0) {
+                ctx.moveTo(startX, startY);
+            } else {
+                ctx.lineTo(startX, startY);
             }
+            
+            // Right side (from top to right, perpendicular view creates depth illusion)
+            ctx.bezierCurveTo(
+                startX + ux * r * kappa, startY + uy * r * kappa,
+                centerX + ux * r + perpX * r * kappa, centerY + uy * r + perpY * r * kappa,
+                centerX + ux * r, centerY + uy * r
+            );
+            
+            // Bottom
+            ctx.bezierCurveTo(
+                centerX + ux * r - perpX * r * kappa, centerY + uy * r - perpY * r * kappa,
+                centerX - perpX * r + ux * r * kappa, centerY - perpY * r + uy * r * kappa,
+                centerX - perpX * r, centerY - perpY * r
+            );
+            
+            // Left side
+            ctx.bezierCurveTo(
+                centerX - perpX * r - ux * r * kappa, centerY - perpY * r - uy * r * kappa,
+                centerX - ux * r - perpX * r * kappa, centerY - uy * r - perpY * r * kappa,
+                centerX - ux * r, centerY - uy * r
+            );
+            
+            // Back to top
+            ctx.bezierCurveTo(
+                centerX - ux * r + perpX * r * kappa, centerY - uy * r + perpY * r * kappa,
+                startX - ux * r * kappa, startY - uy * r * kappa,
+                startX, startY
+            );
         }
         
         ctx.stroke();
@@ -629,7 +655,7 @@ const FeynmanDiagram = () => {
             maxY = canvas.height;
         }
         
-        // Add padding
+        // Add padding, in units of pixels
         const padding = 20;
         minX -= padding;
         minY -= padding;
@@ -731,36 +757,69 @@ const FeynmanDiagram = () => {
         } else if (edge.type === 'scalar') {
             svg = `<line x1="${edge.start.x}" y1="${edge.start.y}" x2="${edge.end.x}" y2="${edge.end.y}" stroke="black" stroke-width="2" stroke-dasharray="10,5" stroke-linecap="round"/>`;
         } else {
-            // For gluon and boson, approximate with polyline
-            const points: string[] = [];
+            // For gluon and boson, use path with bezier curves
             const dx = edge.end.x - edge.start.x;
             const dy = edge.end.y - edge.start.y;
             const distance = Math.sqrt(dx * dx + dy * dy);
             
-            for (let i = 0; i <= 100; i++) {
-                const t = i / 100;
-                const x = edge.start.x + dx * t;
-                const y = edge.start.y + dy * t;
+            if (edge.type === 'gluon') {
+                // Gluon spiral using bezier curves
+                const loopWidth = 8;
+                const loopLength = 16;
+                const numLoops = Math.max(1, Math.floor(distance / loopLength));
                 
-                if (edge.type === 'gluon') {
-                    // Simplified gluon
-                    const perpX = -dy / distance;
-                    const perpY = dx / distance;
-                    const radius = 6;
-                    const angle = t * Math.floor(distance / 15) * Math.PI * 2;
-                    const offsetX = perpX * radius * Math.cos(angle);
-                    const offsetY = perpY * radius * Math.cos(angle);
-                    points.push(`${x + offsetX},${y + offsetY}`);
-                } else {
-                    // Boson wave
+                const ux = dx / distance;
+                const uy = dy / distance;
+                const perpX = -uy;
+                const perpY = ux;
+                
+                let pathData = `M ${edge.start.x} ${edge.start.y}`;
+                
+                for (let i = 0; i < numLoops; i++) {
+                    const t1 = i / numLoops;
+                    const t2 = (i + 0.5) / numLoops;
+                    const t3 = (i + 1) / numLoops;
+                    
+                    const x1 = edge.start.x + dx * t1;
+                    const y1 = edge.start.y + dy * t1;
+                    const x2 = edge.start.x + dx * t2;
+                    const y2 = edge.start.y + dy * t2;
+                    const x3 = edge.start.x + dx * t3;
+                    const y3 = edge.start.y + dy * t3;
+                    
+                    // First half of loop
+                    const cp1x = x1 + dx * 0.15 / numLoops + perpX * loopWidth;
+                    const cp1y = y1 + dy * 0.15 / numLoops + perpY * loopWidth;
+                    const cp2x = x2 - dx * 0.05 / numLoops + perpX * loopWidth * 0.8;
+                    const cp2y = y2 - dy * 0.05 / numLoops + perpY * loopWidth * 0.8;
+                    
+                    pathData += ` C ${cp1x} ${cp1y}, ${cp2x} ${cp2y}, ${x2} ${y2}`;
+                    
+                    // Second half of loop
+                    const cp3x = x2 + dx * 0.05 / numLoops - perpX * loopWidth * 0.8;
+                    const cp3y = y2 + dy * 0.05 / numLoops - perpY * loopWidth * 0.8;
+                    const cp4x = x3 - dx * 0.15 / numLoops - perpX * loopWidth;
+                    const cp4y = y3 - dy * 0.15 / numLoops - perpY * loopWidth;
+                    
+                    pathData += ` C ${cp3x} ${cp3y}, ${cp4x} ${cp4y}, ${x3} ${y3}`;
+                }
+                
+                svg = `<path d="${pathData}" fill="none" stroke="black" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>`;
+            } else {
+                // Boson wave using polyline
+                const points: string[] = [];
+                for (let i = 0; i <= 100; i++) {
+                    const t = i / 100;
+                    const x = edge.start.x + dx * t;
+                    const y = edge.start.y + dy * t;
                     const perpX = -dy / distance;
                     const perpY = dx / distance;
                     const amplitude = 10;
                     const offset = amplitude * Math.sin(t * distance / 20 * Math.PI * 2);
                     points.push(`${x + perpX * offset},${y + perpY * offset}`);
                 }
+                svg = `<polyline points="${points.join(' ')}" fill="none" stroke="black" stroke-width="2" stroke-linecap="round"/>`;
             }
-            svg = `<polyline points="${points.join(' ')}" fill="none" stroke="black" stroke-width="2" stroke-linecap="round"/>`;
         }
         
         if (edge.showArrow) {
