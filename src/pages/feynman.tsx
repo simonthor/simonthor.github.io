@@ -173,6 +173,12 @@ const MathTextBox = styled.div<{ $x: number; $y: number; $fontSize: number; $sel
     user-select: none;
     min-width: 20px;
     min-height: 20px;
+    color: #000;
+    
+    & p {
+        color: #000;
+        margin: 0;
+    }
 `;
 
 const TextInput = styled.input`
@@ -233,6 +239,10 @@ const FeynmanDiagram = () => {
 
         canvas.width = container.clientWidth;
         canvas.height = container.clientHeight;
+        
+        if(typeof window?.MathJax !== "undefined"){
+            window.MathJax.typeset()
+        }
 
         drawDiagram();
     }, [edges, textBoxes, fontSize]);
