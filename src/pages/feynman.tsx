@@ -215,12 +215,6 @@ const FeynmanDiagram = () => {
         return Math.round(value / GRID_SIZE) * GRID_SIZE;
     };
 
-    const snapPointToGrid = (point: Point): Point => {
-        return {
-            x: snapToGrid(point.x),
-            y: snapToGrid(point.y)
-        };
-    };
 
     // Initialize canvas
     useEffect(() => {
@@ -803,33 +797,6 @@ const FeynmanDiagram = () => {
         return svg;
     };
 
-    const escapeHtml = (text: string): string => {
-        const div = document.createElement('div');
-        div.textContent = text;
-        return div.innerHTML;
-    };
-
-    const exportToPNG = () => {
-        const canvas = canvasRef.current;
-        if (!canvas) return;
-
-        canvas.toBlob((blob) => {
-            if (!blob) return;
-            const url = URL.createObjectURL(blob);
-            const link = document.createElement('a');
-            link.href = url;
-            link.download = 'feynman-diagram.png';
-            link.click();
-            URL.revokeObjectURL(url);
-        });
-    };
-
-    const exportToPDF = async () => {
-        // For PDF export, we'll use a simple approach: convert canvas to image and embed in PDF
-        // In a real app, you'd use a library like jsPDF
-        alert('PDF export requires additional library (jsPDF). For now, please use SVG or PNG export.');
-    };
-
     return (
         <>
             <h1>Feynman Diagram Editor</h1>
@@ -903,7 +870,6 @@ const FeynmanDiagram = () => {
                         <SectionTitle>
                             Font Size
                         </SectionTitle>
-                        <p>\(\nu\) $\mu$</p>
                         <FontSizeControl>
                             <FontSizeInput
                                 type="number"
@@ -916,15 +882,8 @@ const FeynmanDiagram = () => {
                     </ToolSection>
 
                     <ToolSection>
-                        <SectionTitle>Export</SectionTitle>
                         <ExportButton onClick={exportToSVG}>
                             Export to SVG
-                        </ExportButton>
-                        <ExportButton onClick={exportToPNG}>
-                            Export to PNG
-                        </ExportButton>
-                        <ExportButton onClick={exportToPDF}>
-                            Export to PDF
                         </ExportButton>
                     </ToolSection>
                 </Sidebar>
