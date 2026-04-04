@@ -215,6 +215,29 @@ const FeynmanDiagram = () => {
         return Math.round(value / GRID_SIZE) * GRID_SIZE;
     };
 
+    // Delete selected element with Delete or Backspace keys
+    useEffect(() => {
+        const handleKeyDown = (e: KeyboardEvent) => {
+            if (e.key === 'Delete' || e.key === 'Backspace') {
+                // Don't delete if we're editing text
+                if (editingText) return;
+                
+                if (selectedElement && selectedElementType) {
+                    e.preventDefault();
+                    if (selectedElementType === 'edge') {
+                        setEdges(edges => edges.filter(edge => edge.id !== selectedElement));
+                    } else if (selectedElementType === 'text') {
+                        setTextBoxes(boxes => boxes.filter(box => box.id !== selectedElement));
+                    }
+                    setSelectedElement(null);
+                    setSelectedElementType(null);
+                }
+            }
+        };
+
+        window.addEventListener('keydown', handleKeyDown);
+        return () => window.removeEventListener('keydown', handleKeyDown);
+    }, [selectedElement, selectedElementType, editingText]);
 
     // Initialize canvas
     useEffect(() => {
@@ -235,7 +258,7 @@ const FeynmanDiagram = () => {
                 window.MathJax.typesetPromise().catch((err: Error) => console.error('MathJax typeset error:', err));
             });
         }
-    }, [edges, textBoxes, fontSize]);
+    }, [edges, textBoxes, fontSize, selectedElement, selectedElementType]);
 
     // Draw the diagram
     const drawDiagram = () => {
@@ -289,8 +312,10 @@ const FeynmanDiagram = () => {
     };
 
     const drawEdge = (ctx: CanvasRenderingContext2D, edge: Edge) => {
-        ctx.strokeStyle = '#000';
-        ctx.lineWidth = 2;
+        // Highlight selected edge
+        const isSelected = selectedElement === edge.id && selectedElementType === 'edge';
+        ctx.strokeStyle = isSelected ? '#0066cc' : '#000';
+        ctx.lineWidth = isSelected ? 3 : 2;
         ctx.lineCap = 'round';
 
         switch (edge.type) {
