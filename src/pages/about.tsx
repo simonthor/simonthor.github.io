@@ -5,6 +5,12 @@ declare global {
     interface Window {
         MathJax?: {
             typeset: () => void;
+            tex2svgPromise: (math: string, options?: any) => Promise<any>;
+            startup: {
+                adaptor: {
+                    tags: () => HTMLElement[]
+                }
+            }
         };
     }
 }

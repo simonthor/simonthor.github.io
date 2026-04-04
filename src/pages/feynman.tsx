@@ -222,13 +222,6 @@ const FeynmanDiagram = () => {
         };
     };
 
-    // Initialize MathJax typesetting on mount
-    useEffect(()=>{
-        if(typeof window?.MathJax !== "undefined"){
-        window.MathJax.typeset()
-        }
-    },[])
-
     // Initialize canvas
     useEffect(() => {
         const canvas = canvasRef.current;
@@ -239,12 +232,15 @@ const FeynmanDiagram = () => {
 
         canvas.width = container.clientWidth;
         canvas.height = container.clientHeight;
-        
-        if(typeof window?.MathJax !== "undefined"){
-            window.MathJax.typeset()
-        }
 
         drawDiagram();
+
+        if(typeof window?.MathJax !== "undefined"){
+            // Use requestAnimationFrame to ensure DOM is updated
+            requestAnimationFrame(() => {
+                window.MathJax.typesetPromise().catch((err: Error) => console.error('MathJax typeset error:', err));
+            });
+        }
     }, [edges, textBoxes, fontSize]);
 
     // Draw the diagram
@@ -264,11 +260,6 @@ const FeynmanDiagram = () => {
         // Draw edges
         edges.forEach(edge => {
             drawEdge(ctx, edge);
-        });
-
-        // Draw text boxes
-        textBoxes.forEach(textBox => {
-            drawTextBox(ctx, textBox);
         });
     };
 
@@ -437,11 +428,6 @@ const FeynmanDiagram = () => {
         );
         ctx.closePath();
         ctx.fill();
-    };
-
-    const drawTextBox = (ctx: CanvasRenderingContext2D, textBox: TextBox) => {
-        // Text is now rendered via React overlay, not on canvas
-        // This function is kept for compatibility but does nothing
     };
 
     const handleCanvasMouseDown = (e: MouseEvent<HTMLCanvasElement>) => {
@@ -614,16 +600,69 @@ const FeynmanDiagram = () => {
         if (!canvas) return;
 
         // Create SVG element
-        let svgContent = `<svg xmlns="http://www.w3.org/2000/svg" width="${canvas.width}" height="${canvas.height}">`;
+        let svgContent = `<svg xmlns="http://www.w3.org/2000/svg" encoding="UTF-8" width="${canvas.width}" height="${canvas.height}">`;
 
         // Add edges
         edges.forEach(edge => {
             svgContent += edgeToSVG(edge);
         });
+        
+        const svgCss = [
+            'svg a{fill:blue;stroke:blue}',
+            '[data-mml-node="merror"]>g{fill:red;stroke:red}',
+            '[data-mml-node="merror"]>rect[data-background]{fill:yellow;stroke:none}',
+            '[data-frame],[data-line]{stroke-width:70px;fill:none}',
+            '.mjx-dashed{stroke-dasharray:140}',
+            '.mjx-dotted{stroke-linecap:round;stroke-dasharray:0,140}',
+            'use[data-c]{stroke-width:3px}'
+        ].join('');
+
+        function getSvgImage(math, options = {}) {
+            const SVGXMLNS = "http://www.w3.org/2000/svg";
+            const adaptor = window.MathJax.startup.adaptor;
+            const result = window.MathJax.tex2svg(math, options);
+            const svg = adaptor.tags(result, 'svg')[0];
+            const defs = adaptor.tags(svg, 'defs')[0] || adaptor.append(svg, adaptor.create('defs'));
+            adaptor.append(defs, adaptor.node('style', {}, [adaptor.text(svgCss)], SVGXMLNS));
+            adaptor.removeAttribute(svg, 'role');
+            adaptor.removeAttribute(svg, 'focusable');
+            adaptor.removeAttribute(svg, 'aria-hidden');
+            const g = adaptor.tags(svg, 'g')[0];
+            adaptor.setAttribute(g, 'stroke', 'black');
+            adaptor.setAttribute(g, 'fill', 'black');
+            return adaptor.serializeXML(svg);
+        }
 
         // Add text boxes
         textBoxes.forEach(textBox => {
-            svgContent += `<text x="${textBox.position.x}" y="${textBox.position.y + fontSize}" font-size="${fontSize}" fill="black">${escapeHtml(textBox.text)}</text>`;
+            // Get the MathJax SVG for the text
+            const mathSvg = getSvgImage(textBox.text);
+            
+            // Extract the SVG attributes and content
+            const svgMatch = mathSvg.match(/<svg[^>]*>(.*)<\/svg>/s);
+            const widthMatch = mathSvg.match(/width="([0-9.]+)ex"/);
+            const viewBoxMatch = mathSvg.match(/viewBox="[0-9.-]+ [0-9.-]+ ([0-9.]+) [0-9.]+"/);
+            
+            if (svgMatch) {
+                const svgInner = svgMatch[1];
+                
+                // Calculate scale based on desired fontSize
+                // MathJax default renders at ~16px font size (1ex ≈ 8px at default)
+                // The viewBox width in units / width in ex gives us units per ex
+                let scale = 1;
+                if (widthMatch && viewBoxMatch) {
+                    const widthInEx = parseFloat(widthMatch[1]);
+                    const viewBoxWidth = parseFloat(viewBoxMatch[1]);
+                    const unitsPerEx = viewBoxWidth / widthInEx;
+                    
+                    // Target: fontSize pixels should equal widthInEx * exToPixels
+                    // MathJax default: 1ex ≈ 8px
+                    // So scale to make the SVG match our fontSize
+                    scale = (fontSize / 16); // fontSize / default MathJax font size
+                }
+                
+                svgContent += `<g transform="translate(${textBox.position.x}, ${textBox.position.y + fontSize}) scale(${scale})">${svgInner}</g>`;
+            }
         });
 
         svgContent += '</svg>';
@@ -850,7 +889,7 @@ const FeynmanDiagram = () => {
                                     <TextInput
                                         autoFocus
                                         value={textBox.text}
-                                        placeholder="Enter text or LaTeX (e.g., $E = mc^2$ or \\nu)"
+                                        placeholder="Enter text or LaTeX (e.g., $E = mc^2$ or $\\nu$)"
                                         onChange={(e) => updateTextBox(textBox.id, e.target.value)}
                                         onBlur={() => setEditingText(null)}
                                         onKeyDown={(e) => {
@@ -862,10 +901,8 @@ const FeynmanDiagram = () => {
                                         onClick={(e) => e.stopPropagation()}
                                     />
                                 ) : textBox.text ? (
-                                    <p>{textBox.text}</p>
-                                ) : (
-                                    <span style={{ color: '#888', fontStyle: 'italic' }}>Click to edit</span>
-                                )}
+                                    <p className="mathjax-content">{'$' + textBox.text + '$'}</p>
+                                ) : <></>}
                             </MathTextBox>
                         ))}
                     </TextOverlay>
