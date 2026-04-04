@@ -641,27 +641,33 @@ const FeynmanDiagram = () => {
             // Extract the SVG attributes and content
             const svgMatch = mathSvg.match(/<svg[^>]*>(.*)<\/svg>/s);
             const widthMatch = mathSvg.match(/width="([0-9.]+)ex"/);
-            const viewBoxMatch = mathSvg.match(/viewBox="[0-9.-]+ [0-9.-]+ ([0-9.]+) [0-9.]+"/);
+            const viewBoxMatch = mathSvg.match(/viewBox="([0-9.-]+) ([0-9.-]+) ([0-9.]+) ([0-9.]+)"/);
             
-            if (svgMatch) {
+            if (svgMatch && widthMatch && viewBoxMatch) {
                 const svgInner = svgMatch[1];
+                const widthInEx = parseFloat(widthMatch[1]);
+                const viewBoxMinX = parseFloat(viewBoxMatch[1]);
+                const viewBoxMinY = parseFloat(viewBoxMatch[2]);
+                const viewBoxWidth = parseFloat(viewBoxMatch[3]);
+                const viewBoxHeight = parseFloat(viewBoxMatch[4]);
                 
-                // Calculate scale based on desired fontSize
-                // MathJax default renders at ~16px font size (1ex ≈ 8px at default)
-                // The viewBox width in units / width in ex gives us units per ex
-                let scale = 1;
-                if (widthMatch && viewBoxMatch) {
-                    const widthInEx = parseFloat(widthMatch[1]);
-                    const viewBoxWidth = parseFloat(viewBoxMatch[1]);
-                    const unitsPerEx = viewBoxWidth / widthInEx;
-                    
-                    // Target: fontSize pixels should equal widthInEx * exToPixels
-                    // MathJax default: 1ex ≈ 8px
-                    // So scale to make the SVG match our fontSize
-                    scale = (fontSize / 16); // fontSize / default MathJax font size
-                }
+                // MathJax viewBox units need to be scaled to pixel coordinates
+                // 1ex at default MathJax = 8px, so widthInEx * 8 = pixel width at default
+                // But we want fontSize pixels for the height
+                // The viewBox defines the coordinate system; we need to scale it to our fontSize
                 
-                svgContent += `<g transform="translate(${textBox.position.x}, ${textBox.position.y + fontSize}) scale(${scale})">${svgInner}</g>`;
+                // Calculate the scale to convert viewBox units to pixels
+                // At MathJax default (16px font), widthInEx ex units = viewBoxWidth internal units
+                // So: viewBoxWidth internal units = widthInEx * 8 pixels (at 1ex = 8px)
+                // We want: fontSize pixels height, so scale accordingly
+                const exToPixels = 8; // 1ex ≈ 8px at default font size
+                const defaultPixelWidth = widthInEx * exToPixels;
+                const targetPixelWidth = widthInEx * (fontSize / 2); // Scale based on fontSize
+                
+                // Scale from viewBox units to our target pixel size
+                const scale = targetPixelWidth / viewBoxWidth;
+                
+                svgContent += `<g transform="translate(${textBox.position.x}, ${textBox.position.y + fontSize}) scale(${scale})"><g transform="translate(${-viewBoxMinX}, ${-viewBoxMinY})">${svgInner}</g></g>`;
             }
         });
 
