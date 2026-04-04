@@ -599,8 +599,48 @@ const FeynmanDiagram = () => {
         const canvas = canvasRef.current;
         if (!canvas) return;
 
-        // Create SVG element
-        let svgContent = `<svg xmlns="http://www.w3.org/2000/svg" encoding="UTF-8" width="${canvas.width}" height="${canvas.height}">`;
+        // Calculate bounding box of all content
+        let minX = Infinity, minY = Infinity;
+        let maxX = -Infinity, maxY = -Infinity;
+        
+        // Calculate bounds from edges
+        edges.forEach(edge => {
+            minX = Math.min(minX, edge.start.x, edge.end.x);
+            minY = Math.min(minY, edge.start.y, edge.end.y);
+            maxX = Math.max(maxX, edge.start.x, edge.end.x);
+            maxY = Math.max(maxY, edge.start.y, edge.end.y);
+        });
+        
+        // Calculate bounds from text boxes (approximate with fontSize)
+        textBoxes.forEach(textBox => {
+            minX = Math.min(minX, textBox.position.x);
+            minY = Math.min(minY, textBox.position.y);
+            // Estimate text width and height (rough approximation)
+            const estimatedWidth = textBox.text.length * fontSize * 0.6;
+            const estimatedHeight = fontSize;
+            maxX = Math.max(maxX, textBox.position.x + estimatedWidth);
+            maxY = Math.max(maxY, textBox.position.y + estimatedHeight);
+        });
+        
+        // If no content, use canvas size
+        if (!isFinite(minX)) {
+            minX = 0; minY = 0;
+            maxX = canvas.width;
+            maxY = canvas.height;
+        }
+        
+        // Add padding
+        const padding = 20;
+        minX -= padding;
+        minY -= padding;
+        maxX += padding;
+        maxY += padding;
+        
+        const width = maxX - minX;
+        const height = maxY - minY;
+
+        // Create SVG element with viewBox for proper coordinate system
+        let svgContent = `<svg xmlns="http://www.w3.org/2000/svg" encoding="UTF-8" width="${width}" height="${height}" viewBox="${minX} ${minY} ${width} ${height}">`;
 
         // Add edges
         edges.forEach(edge => {
