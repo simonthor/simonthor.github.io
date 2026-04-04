@@ -9,6 +9,7 @@ type PageProps = {
 
 const pageComponents: Record<string, LazyExoticComponent<ComponentType>> = {
     about: lazy(() => import('../pages/about')),
+    feynman: lazy(() => import('../pages/feynman')),
     tips: lazy(() => import('../pages/tips')),
     programming: lazy(() => import('../pages/programming')),
     research: lazy(() => import('../pages/research')),
