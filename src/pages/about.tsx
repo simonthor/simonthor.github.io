@@ -34,15 +34,12 @@ const About = () => {
         <>
             <h1>Introduction</h1>
             <h2>Summary</h2>
-            <p>
-                Hi!<br/>
-                I am a PhD student at ETH Zürich in Switzerland, where I conduct research in particle physics. 
-                My main focus is on a particle called the neutrino, which is one of the most elusive particles in the universe, and might hold the key to understanding why there is something in the universe rather than nothing.
-                The experiment I primarily work with is <a href="https://faser.web.cern.ch/" target="_blank" rel="noopener noreferrer">FASER</a>, which is located at CERN, Geneva: the largest particle physics laboratory in the world. 
-                CERN is also where my office is.<br/>
-                Besides research, I have an interest in web development, data science, and science outreach. In my free time, I enjoy reading, playing board games and traveling.
-            </p>
-            {/*TODO: Implement hash links so that links below work.*/}
+            <p>Hi!</p>
+            <p>I am a PhD student at ETH Zürich in Switzerland, where I conduct research in particle physics. </p>
+            <p>My main focus is on a particle called the neutrino, which is one of the most elusive particles in the universe, and might hold the key to understanding why there is something in the universe rather than nothing.</p>
+            <p>The experiment I primarily work with is <a href="https://faser.web.cern.ch/" target="_blank" rel="noopener noreferrer">FASER</a>, which is located at CERN, Geneva: the largest particle physics laboratory in the world.
+            CERN is also where my office is.</p>
+            <p>Besides research, I have an interest in web development, data science, and science outreach. In my free time, I enjoy reading, playing board games and traveling.</p>
             <h2>Research projects</h2>
             <ul>
                 <li><Link to="/research#tau">Tau neutrino searches</Link></li>

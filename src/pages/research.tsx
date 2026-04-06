@@ -46,7 +46,7 @@ const Research = () => {
             </section>
             <section id="reconnection">
                 <h2>Improved track reconstruction of {FASERnu} data</h2>
-                <a href="https://indico.cern.ch/event/1613759/contributions/6809844/">Slides</a> <a href="https://cds.cern.ch/record/2956166">Report that mentions the work</a>
+                <a href="https://indico.cern.ch/event/1613759/contributions/6809844/">Slides</a> | <a href="https://cds.cern.ch/record/2956166">Report that mentions the work</a>
                 <p>
                     I am actively involved in improving the reconstruction of the tracks in {FASERnu} data.
                     Having good track quality is vital for being able to perform all analyses of the data and search for e.g. neutrinos.
@@ -72,17 +72,17 @@ const Research = () => {
             </section>
             <section id="lhcb">
                 <h2>Improving LHCb simulation software</h2>
-                <a href="https://repository.cern/records/fps0t-5kk91">Project report</a> <a href="https://videos.cern.ch/record/3003050">Presentation</a>
+                <a href="https://repository.cern/records/fps0t-5kk91">Project report</a> | <a href="https://videos.cern.ch/record/3003050">Presentation</a>
                 <p>Explanation coming soon! In the meantime, check the links above</p>
             </section>
             <section id="yoda">
                 <h2>Visualizing 2D histograms in <code>YODA</code> and <code>Rivet</code></h2>
-                <a href="https://doi.org/10.21468/scipostphyscodeb.45">Paper</a> <a href="https://simonthor.github.io/GSoC-2021/">Project report</a>
+                <a href="https://doi.org/10.21468/scipostphyscodeb.45">Paper</a> | <a href="https://simonthor.github.io/GSoC-2021/">Project report</a>
                 <p>Explanation coming soon! In the meantime, check the links above</p>
             </section>
             <section id="tpa">
                 <h2>Aurora research: Transpolar arcs</h2>
-                <a href="https://doi.org/10.1029/2022ja030987">First paper</a> <a href="https://doi.org/10.1029/2023gl103816">Second paper</a>
+                <a href="https://doi.org/10.1029/2022ja030987">First paper</a> | <a href="https://doi.org/10.1029/2023gl103816">Second paper</a>
                 <p>
                     In 2019, I began studying at KTH Royal Institute of Technology and also continued my research work at the department of space and plasma physics at the same university.
                     This research focused on investigating the connection between FTEs and magnetosheath jets, a localized plasma region with a high kinetic energy.
