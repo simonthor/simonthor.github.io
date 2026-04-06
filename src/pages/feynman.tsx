@@ -1,4 +1,5 @@
 import { useRef, useState, useEffect, MouseEvent } from 'react';
+import { Tooltip } from 'react-tooltip';
 import styled from 'styled-components';
 
 // Types for Feynman diagram elements
@@ -193,6 +194,18 @@ const TextInput = styled.input`
     border-radius: 2px;
 `;
 
+/**
+ * Interactive Feynman diagram editor component with canvas-based edge rendering,
+ * draggable MathJax text labels, grid snapping, keyboard deletion, and SVG export.
+ *
+ * @remarks
+ * Supports three editing modes: drawing particle edges, adding/editing text, and moving/deleting elements.
+ * Edge styles include fermion (solid), gluon (spiral), boson (wave), and scalar (dashed), with optional arrows.
+ * Exported SVG output includes both edge geometry and MathJax-rendered text.
+ *
+ * For the associated action button, hovering should display a tooltip with help text
+ * explaining what the button does (for example: “Export the current diagram as an SVG file”).
+ */
 const FeynmanDiagram = () => {
     const canvasRef = useRef<HTMLCanvasElement>(null);
     const [edges, setEdges] = useState<Edge[]>([]);
@@ -846,9 +859,20 @@ const FeynmanDiagram = () => {
                         <ToolButton
                             $active={currentTool === 'move'}
                             onClick={() => setCurrentTool('move')}
+                            id="move-delete-button"
+                            data-tooltip-id="move-delete-tooltip"
+                            data-tooltip-place="bottom"
+                            data-tooltip-html="While holding down the left mouse button, drag to move edges or text.<br/>Click on the delete or backspace key while holding down the left mouse button to delete the object."
                         >
-                            Move
+                            Move / Delete
                         </ToolButton>
+                        <Tooltip
+                            id="move-delete-tooltip"
+                            place="bottom"
+                            variant="dark"
+                            positionStrategy="fixed"
+                            style={{ zIndex: 9999 }}
+                        />
                     </ToolSection>
 
                     {currentTool === 'draw' && (
