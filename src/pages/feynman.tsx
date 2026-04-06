@@ -833,7 +833,6 @@ const FeynmanDiagram = () => {
     return (
         <>
             <h1>Feynman Diagram Editor</h1>
-            <p>Create interactive Feynman diagrams with various particle types.</p>
             
             <Container>
                 <Sidebar>
