@@ -7,6 +7,13 @@
         "image": "sun"
     },
     {
+        "text": "Feynman Diagrams",
+        "href": "/feynman",
+        "radius": 18,
+        "height": 3.5,
+        "image": "venus"
+    },
+    {
         "text": "Programming",
         "href": "/programming",
         "radius": 30,

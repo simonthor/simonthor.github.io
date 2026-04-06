@@ -19,6 +19,7 @@ type PagePath = {
 
 const pagePaths: PagePath[] = [
     {path: '/about', image: 'sun'},
+    {path: '/feynman', image: 'venus'},
     {path: '/tips', image: 'jupiter'},
     {path: '/programming', image: 'earth'},
     {path: '/research', image: 'mars'},

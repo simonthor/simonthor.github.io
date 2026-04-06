@@ -29,10 +29,18 @@
       window.MathJax = {
         tex: {
           inlineMath: [['\\(', '\\)'], ['$', '$']]
+        },
+        output: {
+          font: "mathjax-newcm"
+        },
+        svg: {
+          blacker: 3,           // the stroke-width to use for SVG character paths
+          fontCache: 'local',   // or 'global' or 'none'
+          useXlink: true,       // true to include xlink namespace for <use> hrefs, false to not
         }
       };
     </script>
-    <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+    <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@4.1.0/tex-svg.js"></script>
     <!-- 100% privacy-first analytics -->
     <script async src="https://scripts.simpleanalyticscdn.com/latest.js"></script>
   </head>
