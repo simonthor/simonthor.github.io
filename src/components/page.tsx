@@ -19,7 +19,7 @@ const pageComponents: Record<string, LazyExoticComponent<ComponentType>> = {
 
 const Background = styled.div`
     flex: 1;
-    background-image: linear-gradient(#000115, #1f1844, lightblue);
+    background-image: linear-gradient(#000115, #1f1844, #304D6D);
     max-width: 100%;
     min-height: 100%;
     padding-right: 2rem; padding-left: 2rem;
@@ -72,7 +72,7 @@ const Background = styled.div`
 
     & a {
       text-decoration: none;
-      color: #0F79D0;
+      color: #63ADF2;
       text-shadow: none;
     }
 
