@@ -24,17 +24,12 @@ export type TextBox = {
     text: string;
 };
 
-type DiagramElement = {
-    id: string;
-    type: 'edge' | 'text';
-};
-
 type Tool = 'draw' | 'text' | 'move';
 
-// Styled components
+
 const Container = styled.div`
     display: flex;
-    height: calc(100vh - 100px);
+    height: 100%;
     gap: 1rem;
 `;
 
