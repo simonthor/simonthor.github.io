@@ -693,7 +693,7 @@ const FeynmanDiagram = () => {
 
         function getSvgImage(math, options = {}) {
             const SVGXMLNS = "http://www.w3.org/2000/svg";
-            const adaptor = window.MathJax.startup.adaptor;
+            const adaptor: any = window.MathJax.startup.adaptor;
             const result = window.MathJax.tex2svg(math, options);
             const svg = adaptor.tags(result, 'svg')[0];
             const defs = adaptor.tags(svg, 'defs')[0] || adaptor.append(svg, adaptor.create('defs'));

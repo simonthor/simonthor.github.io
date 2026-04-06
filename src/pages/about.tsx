@@ -7,10 +7,17 @@ declare global {
             typeset: () => void;
             tex2svgPromise: (math: string, options?: any) => Promise<any>;
             startup: {
-                adaptor: {
-                    tags: () => HTMLElement[]
-                }
+                adaptor: any;
+                // {
+                //     tags: (text: HTMLElement, tag: string) => HTMLElement;
+                //     append: (parent: HTMLElement, child: HTMLElement) => void;
+                //     create: (tag: string) => HTMLElement;
+                //     text: (text: string) => Text;
+                //     node: (node: Node) => HTMLElement;
+                // }
             }
+            typesetPromise: () => Promise<void>;
+            tex2svg: (math: string, options?: any) => HTMLElement;
         };
     }
 }
