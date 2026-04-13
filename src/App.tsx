@@ -29,6 +29,9 @@ const ConditionalHeader = () => {
     const location = useLocation();
     return location.pathname !== '/' ? <Header /> : null;
 }
+const EasterEgg = () => {
+    return <h1>assöm ksitejvos</h1>
+}
 
 const App = () => {
     // Only render header if not front page
@@ -44,6 +47,9 @@ const App = () => {
                                       image={pathInfo.image}/>} />
                         )
                     )}
+                    <Route path='/påsk'
+                        element={<EasterEgg/>}
+                    />
                     <Route path='/'
                         element={<SolarSystem/>} />
                     <Route path='*'
