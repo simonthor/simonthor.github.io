@@ -100,13 +100,13 @@ const CheckIcon = styled.span<{ $checked: boolean }>`
     }
 `;
 
-const FontSizeControl = styled.div`
+const NumberControl = styled.div`
     display: flex;
     flex-direction: column;
     gap: 0.5rem;
 `;
 
-const FontSizeInput = styled.input`
+const NumberInput = styled.input`
     width: 100%;
     padding: 0.5rem;
     background: #1a2332;
@@ -222,6 +222,7 @@ const FeynmanDiagram = () => {
     const [selectedEdgeType, setSelectedEdgeType] = useState<EdgeType>('fermion');
     const [showArrow, setShowArrow] = useState(false);
     const [fontSize, setFontSize] = useState(16);
+    const [lineWidth, setLineWidth] = useState(2);
     const [isDrawing, setIsDrawing] = useState(false);
     const [startPoint, setStartPoint] = useState<Point | null>(null);
     // Snapped mouse position while drawing, used to preview the edge being drawn
@@ -364,7 +365,7 @@ const FeynmanDiagram = () => {
         canvas.height = container.clientHeight;
 
         drawDiagram();
-    }, [edges, selection, startPoint, endPoint, selectedEdgeType, showArrow]);
+    }, [edges, selection, startPoint, endPoint, selectedEdgeType, showArrow, lineWidth]);
 
     // Text is only (re)rendered as math when editing of a text box ends or when undo/redo changes the text
     const textKey = textBoxes.map(tb => tb.id + tb.text).join('\n');
@@ -440,7 +441,7 @@ const FeynmanDiagram = () => {
         // Highlight selected edge
         const isSelected = selection.includes(edge.id);
         ctx.strokeStyle = isSelected ? '#0066cc' : '#000';
-        ctx.lineWidth = isSelected ? 3 : 2;
+        ctx.lineWidth = isSelected ? lineWidth + 1 : lineWidth;
         ctx.lineCap = 'round';
 
         switch (edge.type) {
@@ -814,9 +815,9 @@ const FeynmanDiagram = () => {
         let svg = '';
         
         if (edge.type === 'fermion') {
-            svg = `<line x1="${edge.start.x}" y1="${edge.start.y}" x2="${edge.end.x}" y2="${edge.end.y}" stroke="black" stroke-width="2" stroke-linecap="round"/>`;
+            svg = `<line x1="${edge.start.x}" y1="${edge.start.y}" x2="${edge.end.x}" y2="${edge.end.y}" stroke="black" stroke-width="${lineWidth}" stroke-linecap="round"/>`;
         } else if (edge.type === 'scalar') {
-            svg = `<line x1="${edge.start.x}" y1="${edge.start.y}" x2="${edge.end.x}" y2="${edge.end.y}" stroke="black" stroke-width="2" stroke-dasharray="10,5" stroke-linecap="round"/>`;
+            svg = `<line x1="${edge.start.x}" y1="${edge.start.y}" x2="${edge.end.x}" y2="${edge.end.y}" stroke="black" stroke-width="${lineWidth}" stroke-dasharray="10,5" stroke-linecap="round"/>`;
         } else {
             // For gluon and boson, use path with bezier curves
             const dx = edge.end.x - edge.start.x;
@@ -854,7 +855,7 @@ const FeynmanDiagram = () => {
                     points.push(`${x},${y}`);
                 }
                 
-                svg = `<polyline points="${points.join(' ')}" fill="none" stroke="black" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>`;
+                svg = `<polyline points="${points.join(' ')}" fill="none" stroke="black" stroke-width="${lineWidth}" stroke-linecap="round" stroke-linejoin="round"/>`;
             } else {
                 // Boson wave using polyline
                 const points: string[] = [];
@@ -868,7 +869,7 @@ const FeynmanDiagram = () => {
                     const offset = amplitude * Math.sin(t * distance / 20 * Math.PI * 2);
                     points.push(`${x + perpX * offset},${y + perpY * offset}`);
                 }
-                svg = `<polyline points="${points.join(' ')}" fill="none" stroke="black" stroke-width="2" stroke-linecap="round"/>`;
+                svg = `<polyline points="${points.join(' ')}" fill="none" stroke="black" stroke-width="${lineWidth}" stroke-linecap="round"/>`;
             }
         }
         
@@ -971,15 +972,30 @@ const FeynmanDiagram = () => {
                         <SectionTitle>
                             Font Size
                         </SectionTitle>
-                        <FontSizeControl>
-                            <FontSizeInput
+                        <NumberControl>
+                            <NumberInput
                                 type="number"
                                 min="8"
                                 max="48"
                                 value={fontSize}
                                 onChange={(e) => setFontSize(Number(e.target.value))}
                             />
-                        </FontSizeControl>
+                        </NumberControl>
+                    </ToolSection>
+
+                    <ToolSection>
+                        <SectionTitle>
+                            Line Thickness
+                        </SectionTitle>
+                        <NumberControl>
+                            <NumberInput
+                                type="number"
+                                min="1"
+                                max="10"
+                                value={lineWidth}
+                                onChange={(e) => setLineWidth(Number(e.target.value))}
+                            />
+                        </NumberControl>
                     </ToolSection>
 
                     <ToolSection>
