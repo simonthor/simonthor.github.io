@@ -224,6 +224,8 @@ const FeynmanDiagram = () => {
     const [fontSize, setFontSize] = useState(16);
     const [isDrawing, setIsDrawing] = useState(false);
     const [startPoint, setStartPoint] = useState<Point | null>(null);
+    // Snapped mouse position while drawing, used to preview the edge being drawn
+    const [endPoint, setEndPoint] = useState<Point | null>(null);
     // Ids of the selected edges and text boxes
     const [selection, setSelection] = useState<string[]>([]);
     const [hoveringEdge, setHoveringEdge] = useState(false);
@@ -362,7 +364,7 @@ const FeynmanDiagram = () => {
         canvas.height = container.clientHeight;
 
         drawDiagram();
-    }, [edges, selection]);
+    }, [edges, selection, startPoint, endPoint, selectedEdgeType, showArrow]);
 
     // Text is only (re)rendered as math when editing of a text box ends or when undo/redo changes the text
     const textKey = textBoxes.map(tb => tb.id + tb.text).join('\n');
@@ -394,6 +396,13 @@ const FeynmanDiagram = () => {
         edges.forEach(edge => {
             drawEdge(ctx, edge);
         });
+
+        // Preview the edge being drawn
+        if (isDrawing && startPoint && endPoint && (startPoint.x !== endPoint.x || startPoint.y !== endPoint.y)) {
+            ctx.globalAlpha = 0.5;
+            drawEdge(ctx, { id: 'preview', type: selectedEdgeType, start: startPoint, end: endPoint, showArrow });
+            ctx.globalAlpha = 1;
+        }
     };
 
     const drawGrid = (ctx: CanvasRenderingContext2D, width: number, height: number) => {
@@ -576,8 +585,10 @@ const FeynmanDiagram = () => {
         const mouseY = e.clientY - rect.top;
 
         if (currentTool === 'draw') {
+            const point = { x: snapToGrid(mouseX), y: snapToGrid(mouseY) };
             setIsDrawing(true);
-            setStartPoint({ x: snapToGrid(mouseX), y: snapToGrid(mouseY) });
+            setStartPoint(point);
+            setEndPoint(point);
         } else if (currentTool === 'text') {
             // Prevent the canvas click from stealing focus from the new text input
             e.preventDefault();
@@ -604,10 +615,16 @@ const FeynmanDiagram = () => {
 
     const handleCanvasMouseMove = (e: MouseEvent<HTMLCanvasElement>) => {
         const canvas = canvasRef.current;
-        if (!canvas || currentTool !== 'select' || dragRef.current) return;
+        if (!canvas) return;
 
         const rect = canvas.getBoundingClientRect();
-        setHoveringEdge(findEdgeAt(e.clientX - rect.left, e.clientY - rect.top) !== null);
+        const mouseX = e.clientX - rect.left;
+        const mouseY = e.clientY - rect.top;
+        if (currentTool === 'draw' && isDrawing) {
+            setEndPoint({ x: snapToGrid(mouseX), y: snapToGrid(mouseY) });
+        } else if (currentTool === 'select' && !dragRef.current) {
+            setHoveringEdge(findEdgeAt(mouseX, mouseY) !== null);
+        }
     };
 
     const handleCanvasMouseUp = (e: MouseEvent<HTMLCanvasElement>) => {
@@ -633,6 +650,7 @@ const FeynmanDiagram = () => {
             }
             setIsDrawing(false);
             setStartPoint(null);
+            setEndPoint(null);
         }
     };
 
@@ -978,6 +996,12 @@ const FeynmanDiagram = () => {
                         onMouseDown={handleCanvasMouseDown}
                         onMouseMove={handleCanvasMouseMove}
                         onMouseUp={handleCanvasMouseUp}
+                        // Cancel the edge being drawn, since the mouse may be released outside of the canvas
+                        onMouseLeave={() => {
+                            setIsDrawing(false);
+                            setStartPoint(null);
+                            setEndPoint(null);
+                        }}
                     />
                     <TextOverlay ref={overlayRef}>
                         {textBoxes.map(textBox => (
