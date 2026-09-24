@@ -24,7 +24,12 @@ export type TextBox = {
     text: string;
 };
 
-type Tool = 'draw' | 'text' | 'move';
+type Tool = 'draw' | 'text' | 'select';
+
+type Selection = {
+    id: string;
+    type: 'edge' | 'text';
+};
 
 
 const Container = styled.div`
@@ -136,15 +141,11 @@ const CanvasContainer = styled.div`
     position: relative;
     overflow: hidden;
     box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    user-select: none;
 `;
 
 const Canvas = styled.canvas`
     display: block;
-    cursor: crosshair;
-    
-    &.move-cursor {
-        cursor: move;
-    }
 `;
 
 const TextOverlay = styled.div`
@@ -156,13 +157,12 @@ const TextOverlay = styled.div`
     pointer-events: none;
 `;
 
-const MathTextBox = styled.div<{ $x: number; $y: number; $fontSize: number; $selected: boolean }>`
+const MathTextBox = styled.div<{ $fontSize: number; $selected: boolean; $tool: Tool }>`
     position: absolute;
-    left: ${props => props.$x}px;
-    top: ${props => props.$y}px;
     font-size: ${props => props.$fontSize}px;
-    pointer-events: all;
-    cursor: ${props => props.$selected ? 'move' : 'default'};
+    pointer-events: ${props => props.$tool === 'draw' ? 'none' : 'all'};
+    cursor: ${props => props.$tool === 'select' ? 'move' : 'text'};
+    isolation: isolate;
     background: ${props => props.$selected ? 'rgba(15, 121, 208, 0.2)' : 'rgba(255, 255, 255, 0.7)'};
     padding: 2px 4px;
     border-radius: 2px;
@@ -174,6 +174,16 @@ const MathTextBox = styled.div<{ $x: number; $y: number; $fontSize: number; $sel
     & p {
         color: #000;
         margin: 0;
+        /* Let clicks through to the box so MathJax's own click handling (explorer, focus) does not interfere */
+        pointer-events: none;
+    }
+
+    /* Invisible padding that enlarges the clickable area around the label */
+    &::before {
+        content: '';
+        position: absolute;
+        inset: -8px;
+        z-index: -1;
     }
 `;
 
@@ -194,7 +204,9 @@ const TextInput = styled.input`
  * draggable MathJax text labels, grid snapping, keyboard deletion, and SVG export.
  *
  * @remarks
- * Supports three editing modes: drawing particle edges, adding/editing text, and moving/deleting elements.
+ * Supports three editing modes: drawing particle edges, adding/editing text, and selecting elements to move
+ * (by dragging or with the arrow keys) or delete them. Edges snap to a coarse grid and text to a finer one.
+ * Empty text boxes are removed as soon as editing ends.
  * Edge styles include fermion (solid), gluon (spiral), boson (wave), and scalar (dashed), with optional arrows.
  * Exported SVG output includes both edge geometry and MathJax-rendered text.
  *
@@ -211,41 +223,94 @@ const FeynmanDiagram = () => {
     const [fontSize, setFontSize] = useState(16);
     const [isDrawing, setIsDrawing] = useState(false);
     const [startPoint, setStartPoint] = useState<Point | null>(null);
-    const [selectedElement, setSelectedElement] = useState<string | null>(null);
-    const [selectedElementType, setSelectedElementType] = useState<'edge' | 'text' | null>(null);
-    const [dragOffset, setDragOffset] = useState<Point>({ x: 0, y: 0 });
+    const [selection, setSelection] = useState<Selection | null>(null);
+    const [hoveringEdge, setHoveringEdge] = useState(false);
     const [editingText, setEditingText] = useState<string | null>(null);
+    // Mouse position at the start of a drag and the snapped distance the element has been moved so far
+    const dragRef = useRef<{ selection: Selection; mouse: Point; moved: Point } | null>(null);
 
-    const GRID_SIZE = 50; // Grid spacing in pixels
+    const GRID_SIZE = 50; // Grid spacing for edges in pixels
+    const TEXT_GRID_SIZE = 10; // Finer grid spacing for text in pixels
+    const EDGE_HIT_THRESHOLD = 15; // Max distance in pixels from an edge that still counts as clicking it
 
     // Snap coordinate to grid
-    const snapToGrid = (value: number): number => {
-        return Math.round(value / GRID_SIZE) * GRID_SIZE;
+    const snapToGrid = (value: number, gridSize: number = GRID_SIZE): number => {
+        return Math.round(value / gridSize) * gridSize;
     };
 
-    // Delete selected element with Delete or Backspace keys
+    const moveElement = (element: Selection, dx: number, dy: number) => {
+        if (dx === 0 && dy === 0) return;
+        if (element.type === 'edge') {
+            setEdges(edges => edges.map(edge => edge.id === element.id ? {
+                ...edge,
+                start: { x: edge.start.x + dx, y: edge.start.y + dy },
+                end: { x: edge.end.x + dx, y: edge.end.y + dy }
+            } : edge));
+        } else {
+            setTextBoxes(boxes => boxes.map(tb => tb.id === element.id ? {
+                ...tb,
+                position: { x: tb.position.x + dx, y: tb.position.y + dy }
+            } : tb));
+        }
+    };
+
+    const startDrag = (e: MouseEvent, element: Selection) => {
+        setSelection(element);
+        dragRef.current = { selection: element, mouse: { x: e.clientX, y: e.clientY }, moved: { x: 0, y: 0 } };
+    };
+
+    // Dragging is tracked on the window so that it keeps working when the cursor leaves the element or canvas
+    useEffect(() => {
+        const handleMouseMove = (e: globalThis.MouseEvent) => {
+            const drag = dragRef.current;
+            if (!drag) return;
+            const gridSize = drag.selection.type === 'edge' ? GRID_SIZE : TEXT_GRID_SIZE;
+            const x = snapToGrid(e.clientX - drag.mouse.x, gridSize);
+            const y = snapToGrid(e.clientY - drag.mouse.y, gridSize);
+            moveElement(drag.selection, x - drag.moved.x, y - drag.moved.y);
+            drag.moved = { x, y };
+        };
+        const handleMouseUp = () => {
+            dragRef.current = null;
+        };
+
+        window.addEventListener('mousemove', handleMouseMove);
+        window.addEventListener('mouseup', handleMouseUp);
+        return () => {
+            window.removeEventListener('mousemove', handleMouseMove);
+            window.removeEventListener('mouseup', handleMouseUp);
+        };
+    }, []);
+
+    // Delete, move or deselect the selected element with the keyboard
     useEffect(() => {
         const handleKeyDown = (e: KeyboardEvent) => {
+            // Don't interfere with typing in the text or font size inputs
+            if (!selection || e.target instanceof HTMLInputElement) return;
+
             if (e.key === 'Delete' || e.key === 'Backspace') {
-                // Don't delete if we're editing text
-                if (editingText) return;
-                
-                if (selectedElement && selectedElementType) {
-                    e.preventDefault();
-                    if (selectedElementType === 'edge') {
-                        setEdges(edges => edges.filter(edge => edge.id !== selectedElement));
-                    } else if (selectedElementType === 'text') {
-                        setTextBoxes(boxes => boxes.filter(box => box.id !== selectedElement));
-                    }
-                    setSelectedElement(null);
-                    setSelectedElementType(null);
+                e.preventDefault();
+                if (selection.type === 'edge') {
+                    setEdges(edges => edges.filter(edge => edge.id !== selection.id));
+                } else {
+                    setTextBoxes(boxes => boxes.filter(box => box.id !== selection.id));
                 }
+                setSelection(null);
+            } else if (e.key === 'Escape') {
+                setSelection(null);
+            } else if (e.key.startsWith('Arrow')) {
+                e.preventDefault();
+                // Edges must stay on the edge grid, text moves on the finer grid unless shift is held
+                const step = selection.type === 'edge' || e.shiftKey ? GRID_SIZE : TEXT_GRID_SIZE;
+                const dx = e.key === 'ArrowLeft' ? -step : e.key === 'ArrowRight' ? step : 0;
+                const dy = e.key === 'ArrowUp' ? -step : e.key === 'ArrowDown' ? step : 0;
+                moveElement(selection, dx, dy);
             }
         };
 
         window.addEventListener('keydown', handleKeyDown);
         return () => window.removeEventListener('keydown', handleKeyDown);
-    }, [selectedElement, selectedElementType, editingText]);
+    }, [selection]);
 
     // Initialize canvas
     useEffect(() => {
@@ -259,14 +324,17 @@ const FeynmanDiagram = () => {
         canvas.height = container.clientHeight;
 
         drawDiagram();
+    }, [edges, selection]);
 
+    // Text is only (re)rendered as math when editing of a text box ends
+    useEffect(() => {
         if(typeof window?.MathJax !== "undefined"){
             // Use requestAnimationFrame to ensure DOM is updated
             requestAnimationFrame(() => {
                 window.MathJax.typesetPromise().catch((err: Error) => console.error('MathJax typeset error:', err));
             });
         }
-    }, [edges, textBoxes, fontSize, selectedElement, selectedElementType]);
+    }, [editingText]);
 
     // Draw the diagram
     const drawDiagram = () => {
@@ -321,7 +389,7 @@ const FeynmanDiagram = () => {
 
     const drawEdge = (ctx: CanvasRenderingContext2D, edge: Edge) => {
         // Highlight selected edge
-        const isSelected = selectedElement === edge.id && selectedElementType === 'edge';
+        const isSelected = selection?.type === 'edge' && selection.id === edge.id;
         ctx.strokeStyle = isSelected ? '#0066cc' : '#000';
         ctx.lineWidth = isSelected ? 3 : 2;
         ctx.lineCap = 'round';
@@ -464,48 +532,41 @@ const FeynmanDiagram = () => {
         if (!canvas) return;
 
         const rect = canvas.getBoundingClientRect();
-        const x = snapToGrid(e.clientX - rect.left);
-        const y = snapToGrid(e.clientY - rect.top);
+        const mouseX = e.clientX - rect.left;
+        const mouseY = e.clientY - rect.top;
 
         if (currentTool === 'draw') {
             setIsDrawing(true);
-            setStartPoint({ x, y });
+            setStartPoint({ x: snapToGrid(mouseX), y: snapToGrid(mouseY) });
         } else if (currentTool === 'text') {
-            // Add text box
+            // Prevent the canvas click from stealing focus from the new text input
+            e.preventDefault();
+            // The current input is unmounted without a blur event, so finish editing it explicitly
+            if (editingText) finishEditing(editingText);
             const newTextBox: TextBox = {
                 id: `text-${Date.now()}`,
-                position: { x, y },
+                position: { x: snapToGrid(mouseX, TEXT_GRID_SIZE), y: snapToGrid(mouseY, TEXT_GRID_SIZE) },
                 text: ''
             };
-            setTextBoxes([...textBoxes, newTextBox]);
-            // Use setTimeout to ensure the textbox is rendered before setting edit mode
-            setTimeout(() => setEditingText(newTextBox.id), 10);
-        } else if (currentTool === 'move') {
-            // Find element to move (edges only, text handled by overlay)
-            const clickedEdge = findEdgeAt(x, y);
+            setTextBoxes(boxes => [...boxes, newTextBox]);
+            setEditingText(newTextBox.id);
+        } else if (currentTool === 'select') {
+            // Text boxes are handled by the overlay, so only edges can be clicked here
+            const clickedEdge = findEdgeAt(mouseX, mouseY);
             if (clickedEdge) {
-                setSelectedElement(clickedEdge.id);
-                setSelectedElementType('edge');
-                setDragOffset({
-                    x: x - clickedEdge.start.x,
-                    y: y - clickedEdge.start.y
-                });
+                startDrag(e, { id: clickedEdge.id, type: 'edge' });
+            } else {
+                setSelection(null);
             }
         }
     };
 
     const handleCanvasMouseMove = (e: MouseEvent<HTMLCanvasElement>) => {
         const canvas = canvasRef.current;
-        if (!canvas) return;
+        if (!canvas || currentTool !== 'select' || dragRef.current) return;
 
         const rect = canvas.getBoundingClientRect();
-        const x = snapToGrid(e.clientX - rect.left);
-        const y = snapToGrid(e.clientY - rect.top);
-
-        if (currentTool === 'move' && selectedElement && selectedElementType === 'edge') {
-            // Move selected edge
-            moveEdge(selectedElement, x - dragOffset.x, y - dragOffset.y);
-        }
+        setHoveringEdge(findEdgeAt(e.clientX - rect.left, e.clientY - rect.top) !== null);
     };
 
     const handleCanvasMouseUp = (e: MouseEvent<HTMLCanvasElement>) => {
@@ -517,32 +578,34 @@ const FeynmanDiagram = () => {
         const y = snapToGrid(e.clientY - rect.top);
 
         if (currentTool === 'draw' && isDrawing && startPoint) {
-            const newEdge: Edge = {
-                id: `edge-${Date.now()}`,
-                type: selectedEdgeType,
-                start: startPoint,
-                end: { x, y },
-                showArrow
-            };
-            setEdges([...edges, newEdge]);
+            // Ignore clicks that would create an edge of zero length
+            if (x !== startPoint.x || y !== startPoint.y) {
+                const newEdge: Edge = {
+                    id: `edge-${Date.now()}`,
+                    type: selectedEdgeType,
+                    start: startPoint,
+                    end: { x, y },
+                    showArrow
+                };
+                setEdges([...edges, newEdge]);
+            }
             setIsDrawing(false);
             setStartPoint(null);
-        } else if (currentTool === 'move') {
-            setSelectedElement(null);
-            setSelectedElementType(null);
         }
     };
 
+    // Returns the edge closest to the given point, if any is within the hit threshold
     const findEdgeAt = (x: number, y: number): Edge | null => {
-        const threshold = 10;
+        let closestEdge: Edge | null = null;
+        let closestDist = EDGE_HIT_THRESHOLD;
         for (const edge of edges) {
-            // Simple distance to line segment check
             const dist = distanceToLineSegment(x, y, edge.start, edge.end);
-            if (dist < threshold) {
-                return edge;
+            if (dist < closestDist) {
+                closestEdge = edge;
+                closestDist = dist;
             }
         }
-        return null;
+        return closestEdge;
     };
 
     const distanceToLineSegment = (px: number, py: number, p1: Point, p2: Point): number => {
@@ -563,65 +626,23 @@ const FeynmanDiagram = () => {
         return Math.sqrt((px - nearestX) ** 2 + (py - nearestY) ** 2);
     };
 
-    const moveEdge = (id: string, newStartX: number, newStartY: number) => {
-        setEdges(edges.map(edge => {
-            if (edge.id === id) {
-                const dx = newStartX - edge.start.x;
-                const dy = newStartY - edge.start.y;
-                return {
-                    ...edge,
-                    start: { x: newStartX, y: newStartY },
-                    end: { x: edge.end.x + dx, y: edge.end.y + dy }
-                };
-            }
-            return edge;
-        }));
-    };
-
-    const moveTextBox = (id: string, x: number, y: number) => {
-        setTextBoxes(textBoxes.map(tb =>
-            tb.id === id ? { ...tb, position: { x, y } } : tb
-        ));
-    };
-
     const updateTextBox = (id: string, text: string) => {
         setTextBoxes(textBoxes.map(tb =>
             tb.id === id ? { ...tb, text } : tb
         ));
     };
 
-    const handleTextMouseDown = (e: MouseEvent<HTMLDivElement>, textBox: TextBox) => {
-        if (currentTool === 'move') {
-            e.stopPropagation();
-            setSelectedElement(textBox.id);
-            setSelectedElementType('text');
-            const rect = canvasRef.current?.parentElement?.getBoundingClientRect();
-            if (rect) {
-                setDragOffset({
-                    x: e.clientX - rect.left - textBox.position.x,
-                    y: e.clientY - rect.top - textBox.position.y
-                });
-            }
-        }
+    // Stop editing a text box and remove it if it is empty
+    const finishEditing = (id: string) => {
+        // Another text box may already be in edit mode, e.g. when a new one was created by clicking elsewhere
+        setEditingText(current => current === id ? null : current);
+        setTextBoxes(boxes => boxes.filter(tb => tb.id !== id || tb.text.trim() !== ''));
     };
 
-    const handleTextMouseMove = (e: MouseEvent<HTMLDivElement>) => {
-        if (currentTool === 'move' && selectedElement && selectedElementType === 'text') {
-            e.stopPropagation();
-            const rect = canvasRef.current?.parentElement?.getBoundingClientRect();
-            if (rect) {
-                const x = snapToGrid(e.clientX - rect.left - dragOffset.x);
-                const y = snapToGrid(e.clientY - rect.top - dragOffset.y);
-                moveTextBox(selectedElement, x, y);
-            }
-        }
-    };
-
-    const handleTextMouseUp = () => {
-        if (selectedElementType === 'text') {
-            setSelectedElement(null);
-            setSelectedElementType(null);
-        }
+    const switchTool = (tool: Tool) => {
+        setCurrentTool(tool);
+        setSelection(null);
+        setHoveringEdge(false);
     };
 
     const exportToSVG = () => {
@@ -840,28 +861,28 @@ const FeynmanDiagram = () => {
                         <SectionTitle>Tool</SectionTitle>
                         <ToolButton
                             $active={currentTool === 'draw'}
-                            onClick={() => setCurrentTool('draw')}
+                            onClick={() => switchTool('draw')}
                         >
                             Draw Edge
                         </ToolButton>
                         <ToolButton
                             $active={currentTool === 'text'}
-                            onClick={() => setCurrentTool('text')}
+                            onClick={() => switchTool('text')}
                         >
                             Add Text
                         </ToolButton>
                         <ToolButton
-                            $active={currentTool === 'move'}
-                            onClick={() => setCurrentTool('move')}
-                            id="move-delete-button"
-                            data-tooltip-id="move-delete-tooltip"
+                            $active={currentTool === 'select'}
+                            onClick={() => switchTool('select')}
+                            id="select-button"
+                            data-tooltip-id="select-tooltip"
                             data-tooltip-place="bottom"
-                            data-tooltip-html="While holding down the left mouse button, drag to move edges or text.<br/>Click on the delete or backspace key while holding down the left mouse button to delete the object."
+                            data-tooltip-html="Click on an edge or text to select it, then drag it or use the arrow keys to move it (hold shift to move text in larger steps).<br/>Press delete or backspace to delete the selected object, or escape to deselect it.<br/>Double-click on text to edit it."
                         >
-                            Move / Delete
+                            Select / Move / Delete
                         </ToolButton>
                         <Tooltip
-                            id="move-delete-tooltip"
+                            id="select-tooltip"
                             place="bottom"
                             variant="dark"
                             positionStrategy="fixed"
@@ -934,25 +955,32 @@ const FeynmanDiagram = () => {
                 <CanvasContainer>
                     <Canvas
                         ref={canvasRef}
-                        className={currentTool === 'move' ? 'move-cursor' : ''}
+                        style={{ cursor: currentTool !== 'select' ? 'crosshair' : hoveringEdge ? 'move' : 'default' }}
                         onMouseDown={handleCanvasMouseDown}
                         onMouseMove={handleCanvasMouseMove}
                         onMouseUp={handleCanvasMouseUp}
                     />
-                    <TextOverlay 
-                        onMouseMove={handleTextMouseMove}
-                        onMouseUp={handleTextMouseUp}
-                    >
+                    <TextOverlay>
                         {textBoxes.map(textBox => (
                             <MathTextBox
                                 key={textBox.id}
-                                $x={textBox.position.x}
-                                $y={textBox.position.y}
+                                style={{ left: textBox.position.x, top: textBox.position.y }}
                                 $fontSize={fontSize}
-                                $selected={selectedElement === textBox.id}
-                                onMouseDown={(e) => handleTextMouseDown(e, textBox)}
+                                $selected={selection?.type === 'text' && selection.id === textBox.id}
+                                $tool={currentTool}
+                                onMouseDown={(e) => {
+                                    if (currentTool === 'select' && editingText !== textBox.id) {
+                                        startDrag(e, { id: textBox.id, type: 'text' });
+                                    }
+                                }}
                                 onClick={() => {
-                                    if (currentTool !== 'move') {
+                                    if (currentTool === 'text') {
+                                        setEditingText(textBox.id);
+                                    }
+                                }}
+                                onDoubleClick={() => {
+                                    if (currentTool === 'select') {
+                                        setSelection(null);
                                         setEditingText(textBox.id);
                                     }
                                 }}
@@ -963,10 +991,10 @@ const FeynmanDiagram = () => {
                                         value={textBox.text}
                                         placeholder="Enter text or LaTeX (e.g., $E = mc^2$ or $\\nu$)"
                                         onChange={(e) => updateTextBox(textBox.id, e.target.value)}
-                                        onBlur={() => setEditingText(null)}
+                                        onBlur={() => finishEditing(textBox.id)}
                                         onKeyDown={(e) => {
-                                            if (e.key === 'Enter') {
-                                                setEditingText(null);
+                                            if (e.key === 'Enter' || e.key === 'Escape') {
+                                                finishEditing(textBox.id);
                                             }
                                             e.stopPropagation();
                                         }}
