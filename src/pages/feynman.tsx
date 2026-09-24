@@ -26,9 +26,9 @@ export type TextBox = {
 
 type Tool = 'draw' | 'text' | 'select';
 
-type Selection = {
-    id: string;
-    type: 'edge' | 'text';
+type Diagram = {
+    edges: Edge[];
+    textBoxes: TextBox[];
 };
 
 
@@ -205,10 +205,11 @@ const TextInput = styled.input`
  *
  * @remarks
  * Supports three editing modes: drawing particle edges, adding/editing text, and selecting elements to move
- * (by dragging or with the arrow keys) or delete them. Edges snap to a coarse grid and text to a finer one.
- * Empty text boxes are removed as soon as editing ends.
+ * (by dragging or with the arrow keys) or delete them. Several elements can be selected by holding ctrl.
+ * Edges snap to a coarse grid and text to a finer one. Empty text boxes are removed as soon as editing ends.
+ * Changes can be undone with ctrl+z and redone with ctrl+y (or ctrl+shift+z).
  * Edge styles include fermion (solid), gluon (spiral), boson (wave), and scalar (dashed), with optional arrows.
- * Exported SVG output includes both edge geometry and MathJax-rendered text.
+ * Exported SVG output includes both edge geometry and the MathJax-rendered text, placed as in the editor.
  *
  * For the associated action button, hovering should display a tooltip with help text
  * explaining what the button does (for example: “Export the current diagram as an SVG file”).
@@ -223,11 +224,19 @@ const FeynmanDiagram = () => {
     const [fontSize, setFontSize] = useState(16);
     const [isDrawing, setIsDrawing] = useState(false);
     const [startPoint, setStartPoint] = useState<Point | null>(null);
-    const [selection, setSelection] = useState<Selection | null>(null);
+    // Ids of the selected edges and text boxes
+    const [selection, setSelection] = useState<string[]>([]);
     const [hoveringEdge, setHoveringEdge] = useState(false);
     const [editingText, setEditingText] = useState<string | null>(null);
-    // Mouse position at the start of a drag and the snapped distance the element has been moved so far
-    const dragRef = useRef<{ selection: Selection; mouse: Point; moved: Point } | null>(null);
+    const overlayRef = useRef<HTMLDivElement>(null);
+    // Previous and undone diagram states for undo and redo
+    const undoStack = useRef<Diagram[]>([]);
+    const redoStack = useRef<Diagram[]>([]);
+    // The diagram before the text box currently being edited was changed, so that the edit can be undone
+    const editStartRef = useRef<{ id: string; diagram: Diagram } | null>(null);
+    // Mouse position at the start of a drag, the snapped distance the elements have been moved so far
+    // and the diagram before the drag started
+    const dragRef = useRef<{ ids: string[]; gridSize: number; mouse: Point; moved: Point; before: Diagram } | null>(null);
 
     const GRID_SIZE = 50; // Grid spacing for edges in pixels
     const TEXT_GRID_SIZE = 10; // Finer grid spacing for text in pixels
@@ -238,25 +247,39 @@ const FeynmanDiagram = () => {
         return Math.round(value / gridSize) * gridSize;
     };
 
-    const moveElement = (element: Selection, dx: number, dy: number) => {
-        if (dx === 0 && dy === 0) return;
-        if (element.type === 'edge') {
-            setEdges(edges => edges.map(edge => edge.id === element.id ? {
-                ...edge,
-                start: { x: edge.start.x + dx, y: edge.start.y + dy },
-                end: { x: edge.end.x + dx, y: edge.end.y + dy }
-            } : edge));
-        } else {
-            setTextBoxes(boxes => boxes.map(tb => tb.id === element.id ? {
-                ...tb,
-                position: { x: tb.position.x + dx, y: tb.position.y + dy }
-            } : tb));
-        }
+    // Save the diagram as it was before a change, so that the change can be undone
+    const recordHistory = (diagram: Diagram = { edges, textBoxes }) => {
+        undoStack.current.push(diagram);
+        redoStack.current = [];
     };
 
-    const startDrag = (e: MouseEvent, element: Selection) => {
-        setSelection(element);
-        dragRef.current = { selection: element, mouse: { x: e.clientX, y: e.clientY }, moved: { x: 0, y: 0 } };
+    const moveElements = (ids: string[], dx: number, dy: number) => {
+        if (dx === 0 && dy === 0) return;
+        const move = (p: Point) => ({ x: p.x + dx, y: p.y + dy });
+        setEdges(edges => edges.map(edge => ids.includes(edge.id) ? { ...edge, start: move(edge.start), end: move(edge.end) } : edge));
+        setTextBoxes(boxes => boxes.map(tb => ids.includes(tb.id) ? { ...tb, position: move(tb.position) } : tb));
+    };
+
+    // Edges must stay on the edge grid, so a selection containing an edge moves on it
+    const selectionGridSize = (ids: string[]) => edges.some(edge => ids.includes(edge.id)) ? GRID_SIZE : TEXT_GRID_SIZE;
+
+    // Select the clicked element (or toggle it if ctrl is held) and start dragging the selection
+    const handleElementMouseDown = (e: MouseEvent, id: string) => {
+        const multiSelect = e.ctrlKey || e.metaKey;
+        if (multiSelect && selection.includes(id)) {
+            setSelection(selection.filter(selectedId => selectedId !== id));
+            return;
+        }
+        // Clicking an already selected element drags the whole selection
+        const ids = multiSelect ? [...selection, id] : selection.includes(id) ? selection : [id];
+        setSelection(ids);
+        dragRef.current = {
+            ids,
+            gridSize: selectionGridSize(ids),
+            mouse: { x: e.clientX, y: e.clientY },
+            moved: { x: 0, y: 0 },
+            before: { edges, textBoxes }
+        };
     };
 
     // Dragging is tracked on the window so that it keeps working when the cursor leaves the element or canvas
@@ -264,13 +287,14 @@ const FeynmanDiagram = () => {
         const handleMouseMove = (e: globalThis.MouseEvent) => {
             const drag = dragRef.current;
             if (!drag) return;
-            const gridSize = drag.selection.type === 'edge' ? GRID_SIZE : TEXT_GRID_SIZE;
-            const x = snapToGrid(e.clientX - drag.mouse.x, gridSize);
-            const y = snapToGrid(e.clientY - drag.mouse.y, gridSize);
-            moveElement(drag.selection, x - drag.moved.x, y - drag.moved.y);
+            const x = snapToGrid(e.clientX - drag.mouse.x, drag.gridSize);
+            const y = snapToGrid(e.clientY - drag.mouse.y, drag.gridSize);
+            moveElements(drag.ids, x - drag.moved.x, y - drag.moved.y);
             drag.moved = { x, y };
         };
         const handleMouseUp = () => {
+            const drag = dragRef.current;
+            if (drag && (drag.moved.x !== 0 || drag.moved.y !== 0)) recordHistory(drag.before);
             dragRef.current = null;
         };
 
@@ -282,35 +306,49 @@ const FeynmanDiagram = () => {
         };
     }, []);
 
-    // Delete, move or deselect the selected element with the keyboard
+    // Undo and redo changes, and delete, move or deselect the selected elements with the keyboard
     useEffect(() => {
         const handleKeyDown = (e: KeyboardEvent) => {
             // Don't interfere with typing in the text or font size inputs
-            if (!selection || e.target instanceof HTMLInputElement) return;
+            if (e.target instanceof HTMLInputElement) return;
 
+            const key = e.key.toLowerCase();
+            if ((e.ctrlKey || e.metaKey) && (key === 'z' || key === 'y')) {
+                e.preventDefault();
+                const redo = key === 'y' || e.shiftKey;
+                const [from, to] = redo ? [redoStack.current, undoStack.current] : [undoStack.current, redoStack.current];
+                const diagram = from.pop();
+                if (!diagram) return;
+                to.push({ edges, textBoxes });
+                setEdges(diagram.edges);
+                setTextBoxes(diagram.textBoxes);
+                setSelection([]);
+                return;
+            }
+
+            if (selection.length === 0) return;
             if (e.key === 'Delete' || e.key === 'Backspace') {
                 e.preventDefault();
-                if (selection.type === 'edge') {
-                    setEdges(edges => edges.filter(edge => edge.id !== selection.id));
-                } else {
-                    setTextBoxes(boxes => boxes.filter(box => box.id !== selection.id));
-                }
-                setSelection(null);
+                recordHistory();
+                setEdges(edges.filter(edge => !selection.includes(edge.id)));
+                setTextBoxes(textBoxes.filter(tb => !selection.includes(tb.id)));
+                setSelection([]);
             } else if (e.key === 'Escape') {
-                setSelection(null);
+                setSelection([]);
             } else if (e.key.startsWith('Arrow')) {
                 e.preventDefault();
-                // Edges must stay on the edge grid, text moves on the finer grid unless shift is held
-                const step = selection.type === 'edge' || e.shiftKey ? GRID_SIZE : TEXT_GRID_SIZE;
+                // Text moves on the finer grid unless shift is held
+                const step = e.shiftKey ? GRID_SIZE : selectionGridSize(selection);
                 const dx = e.key === 'ArrowLeft' ? -step : e.key === 'ArrowRight' ? step : 0;
                 const dy = e.key === 'ArrowUp' ? -step : e.key === 'ArrowDown' ? step : 0;
-                moveElement(selection, dx, dy);
+                recordHistory();
+                moveElements(selection, dx, dy);
             }
         };
 
         window.addEventListener('keydown', handleKeyDown);
         return () => window.removeEventListener('keydown', handleKeyDown);
-    }, [selection]);
+    }, [selection, edges, textBoxes]);
 
     // Initialize canvas
     useEffect(() => {
@@ -326,15 +364,17 @@ const FeynmanDiagram = () => {
         drawDiagram();
     }, [edges, selection]);
 
-    // Text is only (re)rendered as math when editing of a text box ends
+    // Text is only (re)rendered as math when editing of a text box ends or when undo/redo changes the text
+    const textKey = textBoxes.map(tb => tb.id + tb.text).join('\n');
     useEffect(() => {
-        if(typeof window?.MathJax !== "undefined"){
+        if(typeof window?.MathJax !== "undefined" && overlayRef.current){
+            const overlay = overlayRef.current;
             // Use requestAnimationFrame to ensure DOM is updated
             requestAnimationFrame(() => {
-                window.MathJax.typesetPromise().catch((err: Error) => console.error('MathJax typeset error:', err));
+                window.MathJax.typesetPromise([overlay]).catch((err: Error) => console.error('MathJax typeset error:', err));
             });
         }
-    }, [editingText]);
+    }, [editingText, textKey]);
 
     // Draw the diagram
     const drawDiagram = () => {
@@ -389,7 +429,7 @@ const FeynmanDiagram = () => {
 
     const drawEdge = (ctx: CanvasRenderingContext2D, edge: Edge) => {
         // Highlight selected edge
-        const isSelected = selection?.type === 'edge' && selection.id === edge.id;
+        const isSelected = selection.includes(edge.id);
         ctx.strokeStyle = isSelected ? '#0066cc' : '#000';
         ctx.lineWidth = isSelected ? 3 : 2;
         ctx.lineCap = 'round';
@@ -549,14 +589,15 @@ const FeynmanDiagram = () => {
                 text: ''
             };
             setTextBoxes(boxes => [...boxes, newTextBox]);
-            setEditingText(newTextBox.id);
+            // The diagram to return to on undo excludes the previous text box if it was empty and thus removed
+            startEditing(newTextBox.id, { edges, textBoxes: textBoxes.filter(tb => tb.text.trim() !== '') });
         } else if (currentTool === 'select') {
             // Text boxes are handled by the overlay, so only edges can be clicked here
             const clickedEdge = findEdgeAt(mouseX, mouseY);
             if (clickedEdge) {
-                startDrag(e, { id: clickedEdge.id, type: 'edge' });
-            } else {
-                setSelection(null);
+                handleElementMouseDown(e, clickedEdge.id);
+            } else if (!e.ctrlKey && !e.metaKey) {
+                setSelection([]);
             }
         }
     };
@@ -587,6 +628,7 @@ const FeynmanDiagram = () => {
                     end: { x, y },
                     showArrow
                 };
+                recordHistory();
                 setEdges([...edges, newEdge]);
             }
             setIsDrawing(false);
@@ -632,16 +674,30 @@ const FeynmanDiagram = () => {
         ));
     };
 
-    // Stop editing a text box and remove it if it is empty
+    const startEditing = (id: string, diagram: Diagram = { edges, textBoxes }) => {
+        editStartRef.current = { id, diagram };
+        setEditingText(id);
+    };
+
+    // Stop editing a text box, remove it if it is empty and make the edit undoable if the text changed
     const finishEditing = (id: string) => {
         // Another text box may already be in edit mode, e.g. when a new one was created by clicking elsewhere
         setEditingText(current => current === id ? null : current);
         setTextBoxes(boxes => boxes.filter(tb => tb.id !== id || tb.text.trim() !== ''));
+
+        // The edit may already have been finished, e.g. by both pressing enter and the resulting blur
+        const editStart = editStartRef.current;
+        if (editStart?.id !== id) return;
+        editStartRef.current = null;
+        const oldText = editStart.diagram.textBoxes.find(tb => tb.id === id)?.text ?? '';
+        const newText = textBoxes.find(tb => tb.id === id)?.text ?? '';
+        // Empty text boxes are removed, so an empty new text means that there is no text box
+        if (oldText !== (newText.trim() ? newText : '')) recordHistory(editStart.diagram);
     };
 
     const switchTool = (tool: Tool) => {
         setCurrentTool(tool);
-        setSelection(null);
+        setSelection([]);
         setHoveringEdge(false);
     };
 
@@ -661,15 +717,17 @@ const FeynmanDiagram = () => {
             maxY = Math.max(maxY, edge.start.y, edge.end.y);
         });
         
-        // Calculate bounds from text boxes (approximate with fontSize)
-        textBoxes.forEach(textBox => {
-            minX = Math.min(minX, textBox.position.x);
-            minY = Math.min(minY, textBox.position.y);
-            // Estimate text width and height (rough approximation)
-            const estimatedWidth = textBox.text.length * fontSize * 0.6;
-            const estimatedHeight = fontSize;
-            maxX = Math.max(maxX, textBox.position.x + estimatedWidth);
-            maxY = Math.max(maxY, textBox.position.y + estimatedHeight);
+        // Use the math exactly as MathJax rendered it in the editor, so that the text ends up at the same position
+        const canvasRect = canvas.getBoundingClientRect();
+        const mathSvgs = Array.from(overlayRef.current?.querySelectorAll('mjx-container > svg') ?? []).map(svg => {
+            const rect = svg.getBoundingClientRect();
+            return { svg, x: rect.left - canvasRect.left, y: rect.top - canvasRect.top, width: rect.width, height: rect.height };
+        });
+        mathSvgs.forEach(({ x, y, width, height }) => {
+            minX = Math.min(minX, x);
+            minY = Math.min(minY, y);
+            maxX = Math.max(maxX, x + width);
+            maxY = Math.max(maxY, y + height);
         });
         
         // If no content, use canvas size
@@ -706,59 +764,20 @@ const FeynmanDiagram = () => {
             '.mjx-dotted{stroke-linecap:round;stroke-dasharray:0,140}',
             'use[data-c]{stroke-width:3px}'
         ].join('');
+        svgContent += `<defs><style>${svgCss}</style></defs>`;
 
-        function getSvgImage(math, options = {}) {
-            const SVGXMLNS = "http://www.w3.org/2000/svg";
-            const adaptor: any = window.MathJax.startup.adaptor;
-            const result = window.MathJax.tex2svg(math, options);
-            const svg = adaptor.tags(result, 'svg')[0];
-            const defs = adaptor.tags(svg, 'defs')[0] || adaptor.append(svg, adaptor.create('defs'));
-            adaptor.append(defs, adaptor.node('style', {}, [adaptor.text(svgCss)], SVGXMLNS));
-            adaptor.removeAttribute(svg, 'role');
-            adaptor.removeAttribute(svg, 'focusable');
-            adaptor.removeAttribute(svg, 'aria-hidden');
-            const g = adaptor.tags(svg, 'g')[0];
-            adaptor.setAttribute(g, 'stroke', 'black');
-            adaptor.setAttribute(g, 'fill', 'black');
-            return adaptor.serializeXML(svg);
-        }
-
-        // Add text boxes
-        textBoxes.forEach(textBox => {
-            // Get the MathJax SVG for the text
-            const mathSvg = getSvgImage(textBox.text);
-            
-            // Extract the SVG attributes and content
-            const svgMatch = mathSvg.match(/<svg[^>]*>(.*)<\/svg>/s);
-            const widthMatch = mathSvg.match(/width="([0-9.]+)ex"/);
-            const viewBoxMatch = mathSvg.match(/viewBox="([0-9.-]+) ([0-9.-]+) ([0-9.]+) ([0-9.]+)"/);
-            
-            if (svgMatch && widthMatch && viewBoxMatch) {
-                const svgInner = svgMatch[1];
-                const widthInEx = parseFloat(widthMatch[1]);
-                const viewBoxMinX = parseFloat(viewBoxMatch[1]);
-                const viewBoxMinY = parseFloat(viewBoxMatch[2]);
-                const viewBoxWidth = parseFloat(viewBoxMatch[3]);
-                const viewBoxHeight = parseFloat(viewBoxMatch[4]);
-                
-                // MathJax viewBox units need to be scaled to pixel coordinates
-                // 1ex at default MathJax = 8px, so widthInEx * 8 = pixel width at default
-                // But we want fontSize pixels for the height
-                // The viewBox defines the coordinate system; we need to scale it to our fontSize
-                
-                // Calculate the scale to convert viewBox units to pixels
-                // At MathJax default (16px font), widthInEx ex units = viewBoxWidth internal units
-                // So: viewBoxWidth internal units = widthInEx * 8 pixels (at 1ex = 8px)
-                // We want: fontSize pixels height, so scale accordingly
-                const exToPixels = 8; // 1ex ≈ 8px at default font size
-                const defaultPixelWidth = widthInEx * exToPixels;
-                const targetPixelWidth = widthInEx * (fontSize / 2); // Scale based on fontSize
-                
-                // Scale from viewBox units to our target pixel size
-                const scale = targetPixelWidth / viewBoxWidth;
-                
-                svgContent += `<g transform="translate(${textBox.position.x}, ${textBox.position.y + fontSize}) scale(${scale})"><g transform="translate(${-viewBoxMinX}, ${-viewBoxMinY})">${svgInner}</g></g>`;
-            }
+        // Add text as nested SVGs placed at the same pixel position and size as in the editor
+        mathSvgs.forEach(({ svg, x, y, width, height }) => {
+            const clone = svg.cloneNode(true) as SVGSVGElement;
+            clone.setAttribute('x', `${x}`);
+            clone.setAttribute('y', `${y}`);
+            clone.setAttribute('width', `${width}`);
+            clone.setAttribute('height', `${height}`);
+            // currentColor refers to the page's text color, which does not exist outside of it
+            const g = clone.querySelector('g');
+            g?.setAttribute('stroke', 'black');
+            g?.setAttribute('fill', 'black');
+            svgContent += new XMLSerializer().serializeToString(clone);
         });
 
         svgContent += '</svg>';
@@ -877,7 +896,7 @@ const FeynmanDiagram = () => {
                             id="select-button"
                             data-tooltip-id="select-tooltip"
                             data-tooltip-place="bottom"
-                            data-tooltip-html="Click on an edge or text to select it, then drag it or use the arrow keys to move it (hold shift to move text in larger steps).<br/>Press delete or backspace to delete the selected object, or escape to deselect it.<br/>Double-click on text to edit it."
+                            data-tooltip-html="Click on an edge or text to select it, then drag it or use the arrow keys to move it (hold shift to move text in larger steps).<br/>Hold ctrl while clicking to select several objects.<br/>Press delete or backspace to delete the selected objects, or escape to deselect them.<br/>Double-click on text to edit it.<br/>Press ctrl+z to undo and ctrl+y to redo."
                         >
                             Select / Move / Delete
                         </ToolButton>
@@ -960,28 +979,28 @@ const FeynmanDiagram = () => {
                         onMouseMove={handleCanvasMouseMove}
                         onMouseUp={handleCanvasMouseUp}
                     />
-                    <TextOverlay>
+                    <TextOverlay ref={overlayRef}>
                         {textBoxes.map(textBox => (
                             <MathTextBox
                                 key={textBox.id}
                                 style={{ left: textBox.position.x, top: textBox.position.y }}
                                 $fontSize={fontSize}
-                                $selected={selection?.type === 'text' && selection.id === textBox.id}
+                                $selected={selection.includes(textBox.id)}
                                 $tool={currentTool}
                                 onMouseDown={(e) => {
                                     if (currentTool === 'select' && editingText !== textBox.id) {
-                                        startDrag(e, { id: textBox.id, type: 'text' });
+                                        handleElementMouseDown(e, textBox.id);
                                     }
                                 }}
                                 onClick={() => {
-                                    if (currentTool === 'text') {
-                                        setEditingText(textBox.id);
+                                    if (currentTool === 'text' && editingText !== textBox.id) {
+                                        startEditing(textBox.id);
                                     }
                                 }}
                                 onDoubleClick={() => {
                                     if (currentTool === 'select') {
-                                        setSelection(null);
-                                        setEditingText(textBox.id);
+                                        setSelection([]);
+                                        startEditing(textBox.id);
                                     }
                                 }}
                             >
@@ -1001,7 +1020,9 @@ const FeynmanDiagram = () => {
                                         onClick={(e) => e.stopPropagation()}
                                     />
                                 ) : textBox.text ? (
-                                    <p className="mathjax-content">{'$' + textBox.text + '$'}</p>
+                                    // Keyed by the text so that a new element is typeset when undo/redo changes it,
+                                    // since MathJax replaces the text node that React would otherwise update
+                                    <p key={textBox.text} className="mathjax-content">{'$' + textBox.text + '$'}</p>
                                 ) : <></>}
                             </MathTextBox>
                         ))}

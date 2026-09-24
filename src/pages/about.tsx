@@ -16,7 +16,7 @@ declare global {
                 //     node: (node: Node) => HTMLElement;
                 // }
             }
-            typesetPromise: () => Promise<void>;
+            typesetPromise: (elements?: HTMLElement[]) => Promise<void>;
             tex2svg: (math: string, options?: any) => HTMLElement;
         };
     }

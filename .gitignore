@@ -38,3 +38,6 @@ planet-design.pptx
 .vite
 
 dist/
+
+.serena/
+.playwright/
